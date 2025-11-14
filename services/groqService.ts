@@ -44,12 +44,30 @@ const getGroqClient = () => {
 
 const parseJsonResponse = <T>(jsonString: string, context: string): T => {
     try {
+        if (!jsonString || jsonString.trim() === '') {
+            throw new Error(`Empty response from AI for ${context}`);
+        }
+        
         // Remove markdown code blocks if present
-        const cleanedString = jsonString.replace(/^```json\s*|```\s*$/g, '').trim();
-        return JSON.parse(cleanedString) as T;
+        let cleanedString = jsonString.replace(/^```json\s*|```\s*$/g, '').trim();
+        
+        // Try to extract JSON if wrapped in text
+        const jsonMatch = cleanedString.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            cleanedString = jsonMatch[0];
+        }
+        
+        const parsed = JSON.parse(cleanedString);
+        
+        // Validate that we got an object
+        if (!parsed || typeof parsed !== 'object') {
+            throw new Error('Parsed result is not an object');
+        }
+        
+        return parsed as T;
     } catch (error) {
-        console.error(`Error parsing JSON for ${context}:`, error, "Raw string:", jsonString);
-        throw new Error(`AI returned a response in an unexpected format for ${context}.`);
+        console.error(`Error parsing JSON for ${context}:`, error, "\nRaw string:", jsonString);
+        throw new Error(`AI returned a response in an unexpected format for ${context}. ${error instanceof Error ? error.message : ''}`);
     }
 };
 
@@ -340,10 +358,15 @@ The challenge should be completable within 1-2 weeks.`;
 };
 
 export const generateCommunityInsight = async (workoutData: { date: string; count: number; type: string }[]): Promise<CommunityInsight> => {
+    // Validate input
+    if (!workoutData || workoutData.length === 0) {
+        throw new Error("No workout data provided for community insight generation");
+    }
+
     const prompt = `Analyze this community workout data from the past 30 days and provide ONE interesting insight.
 
 Workout Data (date, count, type):
-${JSON.stringify(workoutData)}
+${JSON.stringify(workoutData.slice(0, 50))}
 
 Look for patterns like:
 - Which day of week has most activity
@@ -351,25 +374,47 @@ Look for patterns like:
 - Activity peaks or growth trends
 - Interesting correlations
 
-Return ONLY valid JSON with this exact structure:
+CRITICAL: Return ONLY valid JSON, nothing else. Use this exact structure:
 {
     "title": "Catchy 2-3 word title (e.g., 'Weekend Warriors', 'Morning Movers')",
     "description": "Friendly 1-2 sentence explanation of the insight that motivates the community",
     "statValue": "A percentage, number, or short stat (e.g., '+25%', '150+', '3x')",
     "statLabel": "What the stat represents (e.g., 'More activity on Saturdays')",
-    "trendDirection": "up, down, or stable"
+    "trendDirection": "up"
 }
 
+Note: trendDirection must be exactly one of: "up", "down", or "stable"
 Keep it positive, specific, and motivating!`;
 
-    const response = await getGroqClient().chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.8,
-        max_tokens: 400,
-    });
+    try {
+        const response = await getGroqClient().chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 500,
+            response_format: { type: "json_object" }
+        });
 
-    const content = response.choices[0]?.message?.content || "";
-    if (!content) throw new Error("AI response was empty for community insight generation.");
-    return parseJsonResponse<CommunityInsight>(content, "community insight generation");
+        const content = response.choices[0]?.message?.content?.trim() || "";
+        
+        if (!content) {
+            console.error("Empty response from AI for community insight");
+            throw new Error("AI response was empty for community insight generation.");
+        }
+        
+        console.log("AI response for community insight:", content);
+        return parseJsonResponse<CommunityInsight>(content, "community insight generation");
+    } catch (error) {
+        console.error("Error in generateCommunityInsight:", error);
+        console.error("Error details:", error instanceof Error ? error.message : String(error));
+        console.error("Stack:", error instanceof Error ? error.stack : 'No stack');
+        // Return a fallback insight instead of throwing
+        return {
+            title: "Growing Together",
+            description: "The community is staying active and motivated! Keep logging your workouts to inspire others.",
+            statValue: `${workoutData.length}`,
+            statLabel: "Days of community activity",
+            trendDirection: "up"
+        };
+    }
 };

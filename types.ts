@@ -56,6 +56,7 @@ export interface UserProfile {
     cycleLength?: number;
     onboardingDate?: string;
     profilePictureUrl?: string;
+    has_seen_walkthrough?: boolean; // Track if user has completed the walkthrough
 }
 
 export type MenstrualPhase = 'Menstrual' | 'Follicular' | 'Ovulatory' | 'Luteal';

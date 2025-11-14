@@ -141,23 +141,22 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
 
     const clearUserState = useCallback(async () => {
         setUser(null);
+        setSession(null);
         setMeals([]);
         setWorkoutHistory([]);
         setWeightHistory([]);
         setDailyLogs([]);
         setJournalEntries([]);
-        setChallenges([]);
-        setAchievements(staticAchievements);
-        setEarnedAchievementIds(new Set());
-        setWorkoutPlan(null);
-        setWeeklyMealPlan(null);
         setMacros({ target: { calories: 0, protein: 0, carbs: 0, fat: 0 }, consumed: { calories: 0, protein: 0, carbs: 0, fat: 0 } });
-        setIsOnboardingComplete(false);
+        setAchievements([]);
+        setEarnedAchievementIds(new Set());
         setCycleInsight(null);
         setCyclePatternInsight(null);
-    }, []);
-    
-     const persistCycleInsight = (insight: CycleFocusInsight | null) => {
+        setWorkoutPlan(null);
+        setWeeklyMealPlan(null);
+        setChallenges([]);
+        setIsOnboardingComplete(false);
+    }, []);     const persistCycleInsight = (insight: CycleFocusInsight | null) => {
         setCycleInsight(insight);
         const key = getCacheKey('cycle_insight');
         if (key) {
@@ -178,18 +177,9 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     // It's the single source of truth for the user's state, preventing race conditions.
     useEffect(() => {
         let mounted = true;
-        let loadingTimeout: NodeJS.Timeout;
         
         const initializeAuth = async () => {
             try {
-                // Set timeout to force loading to complete after 10 seconds
-                loadingTimeout = setTimeout(() => {
-                    if (mounted) {
-                        console.error('Auth initialization timeout - forcing loading to complete');
-                        setIsLoading(false);
-                    }
-                }, 10000);
-
                 // Get initial session immediately
                 const { data: { session: initialSession } } = await supabase.auth.getSession();
                 
@@ -199,21 +189,17 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                 
                 if (!initialSession) {
                     await clearUserState();
-                    clearTimeout(loadingTimeout);
                     setIsLoading(false);
                     return;
                 }
                 
                 // Load user data for initial session
                 await loadUserData(initialSession);
-                clearTimeout(loadingTimeout);
                 setIsLoading(false);
             } catch (error) {
                 logger.error('Error initializing auth', error, { context: 'UserContext' });
-                console.error('Auth initialization error:', error);
                 if (mounted) {
                     await clearUserState();
-                    clearTimeout(loadingTimeout);
                     setIsLoading(false);
                 }
             }
@@ -233,11 +219,11 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                     .from('profiles').select('*').eq('id', userId).single();
 
                 if (profileError || !profileData) {
+                    logger.error('Error loading profile', profileError, { context: 'UserContext', data: { userId } });
                     await clearUserState();
                     setUser({ id: userId, email: currentSession.user.email! } as UserProfile);
                     setIsOnboardingComplete(false);
-                    setIsLoading(false);
-                    return;
+                    return; // Don't set loading to false here - let caller handle it
                 }
                 
                 userProfile = { ...fromDBShape(profileData), id: profileData.id, email: currentSession.user.email! } as UserProfile;
@@ -245,8 +231,8 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
             }
             
             if (!userProfile) {
-                setIsLoading(false);
-                return;
+                logger.warn('No user profile found', { context: 'UserContext', data: { userId } });
+                return; // Don't set loading to false here - let caller handle it
             }
             
             setUser(userProfile);
@@ -322,6 +308,8 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                     // Continue anyway - we have the user profile
                 }
             }
+            
+            logger.info('User data loaded successfully', { context: 'UserContext', data: { userId, hasOnboarding: !!userProfile?.onboardingDate } });
         };
         
         // Initialize on mount
@@ -347,9 +335,8 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         return () => {
             mounted = false;
             subscription.unsubscribe();
-            if (loadingTimeout) clearTimeout(loadingTimeout);
         };
-    }, [clearUserState]);
+    }, []);
     
     useEffect(() => {
         if (user) {

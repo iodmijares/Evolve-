@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { colors } from '../../styles/theme';
 import { Icon } from './Icon';
 import { useTheme } from '../../context/ThemeContext';
+import { useUser } from '../../context/UserContext';
+import { supabase } from '../../services/supabaseClient';
 
 interface WalkthroughStep {
   title: string;
@@ -55,18 +57,41 @@ const walkthroughSteps: WalkthroughStep[] = [
 
 export const Walkthrough: React.FC = () => {
   const { theme } = useTheme();
+  const { user, updateUserProfile } = useUser();
   const isDark = theme === 'dark';
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    // Check if user has seen walkthrough
-    const hasSeenWalkthrough = localStorage.getItem('evolve_walkthrough_seen');
-    if (!hasSeenWalkthrough) {
-      // Show walkthrough after 1 second
-      setTimeout(() => setIsVisible(true), 1000);
-    }
-  }, []);
+    const checkWalkthroughStatus = async () => {
+      if (!user || hasChecked) {
+        return;
+      }
+
+      try {
+        // Check if user has seen walkthrough from their profile
+        const hasSeenWalkthrough = user.has_seen_walkthrough ?? false;
+        
+        // Double-check with localStorage as fallback (for migration period)
+        const localStorageCheck = localStorage.getItem(`evolve_walkthrough_seen_${user.id}`);
+        
+        setHasChecked(true);
+        
+        if (!hasSeenWalkthrough && !localStorageCheck) {
+          // Show walkthrough after 1 second
+          setTimeout(() => {
+            setIsVisible(true);
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error checking walkthrough status:', error);
+        setHasChecked(true);
+      }
+    };
+
+    checkWalkthroughStatus();
+  }, [user, hasChecked]);
 
   const handleNext = () => {
     if (currentStep < walkthroughSteps.length - 1) {
@@ -82,9 +107,32 @@ export const Walkthrough: React.FC = () => {
     }
   };
 
-  const handleClose = () => {
+  const handleClose = async () => {
     setIsVisible(false);
-    localStorage.setItem('evolve_walkthrough_seen', 'true');
+    
+    // Save to database and update local user state
+    if (user) {
+      try {
+        // Save to localStorage immediately for instant feedback
+        localStorage.setItem(`evolve_walkthrough_seen_${user.id}`, 'true');
+        
+        // Update database
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_seen_walkthrough: true })
+          .eq('id', user.id);
+        
+        if (error) {
+          console.error('Error updating walkthrough status:', error);
+          // If DB update fails, localStorage will still prevent re-showing
+        } else {
+          // Update local user state to reflect the change
+          await updateUserProfile({ ...user, has_seen_walkthrough: true });
+        }
+      } catch (error) {
+        console.error('Error updating walkthrough status:', error);
+      }
+    }
   };
 
   const handleSkip = () => {
