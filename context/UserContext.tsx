@@ -178,9 +178,18 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     // It's the single source of truth for the user's state, preventing race conditions.
     useEffect(() => {
         let mounted = true;
+        let loadingTimeout: NodeJS.Timeout;
         
         const initializeAuth = async () => {
             try {
+                // Set timeout to force loading to complete after 10 seconds
+                loadingTimeout = setTimeout(() => {
+                    if (mounted) {
+                        console.error('Auth initialization timeout - forcing loading to complete');
+                        setIsLoading(false);
+                    }
+                }, 10000);
+
                 // Get initial session immediately
                 const { data: { session: initialSession } } = await supabase.auth.getSession();
                 
@@ -190,17 +199,21 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                 
                 if (!initialSession) {
                     await clearUserState();
+                    clearTimeout(loadingTimeout);
                     setIsLoading(false);
                     return;
                 }
                 
                 // Load user data for initial session
                 await loadUserData(initialSession);
+                clearTimeout(loadingTimeout);
                 setIsLoading(false);
             } catch (error) {
                 logger.error('Error initializing auth', error, { context: 'UserContext' });
+                console.error('Auth initialization error:', error);
                 if (mounted) {
                     await clearUserState();
+                    clearTimeout(loadingTimeout);
                     setIsLoading(false);
                 }
             }
@@ -334,6 +347,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         return () => {
             mounted = false;
             subscription.unsubscribe();
+            if (loadingTimeout) clearTimeout(loadingTimeout);
         };
     }, [clearUserState]);
     
