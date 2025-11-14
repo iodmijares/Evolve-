@@ -1,0 +1,269 @@
+:root {
+    --primary: #10b981;
+    --primary-focus: #059669;
+    --primary-light: #34d399;
+    --secondary: #0ea5e9;
+    --accent: #f59e0b;
+    --light: #ffffff;
+    --dark: #0f172a;
+    --base: #f8fafc;
+    --muted: #64748b;
+    --border: #e2e8f0;
+
+    --color-text-base: var(--dark);
+    --color-text-muted: var(--muted);
+    --color-bg-base: var(--base);
+    --color-bg-light: var(--light);
+    --color-bg-dark-contrast: var(--gray-800);
+    --color-border: var(--border);
+
+    --red-50: #fef2f2;
+    --red-200: #fecaca;
+    --red-400: #f87171;
+    --red-700: #b91c1c;
+
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-200: #a7f3d0;
+    --emerald-300: #6ee7b7;
+    --emerald-400: #34d399;
+    --emerald-700: #047857;
+    --emerald-800: #065f46;
+
+    --sky-50: #f0f9ff;
+    --sky-800: #075985;
+    
+    --fuchsia-50: #fdf4ff;
+    --fuchsia-300: #f0abfc;
+    --fuchsia-400: #e879f9;
+    --fuchsia-500: #d946ef;
+    --fuchsia-800: #86198f;
+    
+    --amber-50: #fffbeb;
+    --amber-300: #fcd34d;
+    --amber-800: #92400e;
+
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+html.dark {
+    --color-text-base: var(--light);
+    --color-text-muted: var(--gray-400);
+    --color-bg-base: var(--dark);
+    --color-bg-light: var(--gray-800);
+    --color-bg-dark-contrast: var(--gray-700);
+    --color-border: var(--gray-700);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+.h1 { font-size: 24px; font-weight: bold; }
+.h2 { font-size: 20px; font-weight: bold; }
+.h3 { font-size: 18px; font-weight: 600; }
+.body { font-size: 16px; }
+.subtle { font-size: 14px; color: var(--color-text-muted); }
+
+/* Layout & General Classes */
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+html.dark .layout {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.layout > .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 80px; /* Space for bottom bar + padding */
+    scroll-behavior: smooth;
+}
+
+/* Spinner */
+.spinner {
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  border-style: solid;
+  border-color: var(--primary);
+  border-right-color: transparent !important;
+}
+.spinner-sm { width: 16px; height: 16px; border-width: 2px; }
+.spinner-md { width: 24px; height: 24px; border-width: 3px; }
+.spinner-lg { width: 36px; height: 36px; border-width: 4px; }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Input Styles */
+.input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid transparent;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-base);
+    border-radius: 12px;
+    font-size: 15px;
+    height: 52px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+html.dark .input {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--color-bg-light);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    transform: translateY(-1px);
+}
+
+html.dark .input:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.input::placeholder {
+    color: var(--slate-400);
+    font-weight: 400;
+}
+
+html.dark .input::placeholder {
+    color: var(--gray-500);
+}
+
+.textarea {
+    height: 150px;
+    resize: vertical;
+    padding-top: 12px;
+}
+
+/* Button Styles */
+.btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-focus) 100%);
+    padding: 15px;
+    border-radius: 12px;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    color: var(--light);
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn:disabled {
+    background: linear-gradient(135deg, var(--slate-300) 0%, var(--slate-400) 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+html.dark .btn:disabled {
+    background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-600) 100%);
+}
+
+/* Responsive visibility */
+.desktop-only { display: none; }
+.mobile-only { display: block; }
+
+@media (min-width: 768px) {
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    
+    .layout {
+        flex-direction: row;
+    }
+    .layout > .content {
+        padding-bottom: 0;
+    }
+}

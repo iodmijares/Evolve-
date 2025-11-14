@@ -1,0 +1,101 @@
+import React from 'react';
+import { Icon } from '../shared/Icon';
+import { useTheme } from '../../context/ThemeContext';
+import { colors } from '../../styles/theme';
+import { ScreenName } from './AppLayout';
+
+interface BottomBarProps {
+    activeScreen: ScreenName;
+    setActiveScreen: (screen: ScreenName) => void;
+}
+
+const navItems = [
+  { name: 'Dashboard', label: 'Home', icon: 'home' },
+  { name: 'Journal', label: 'Journal', icon: 'journal' },
+  { name: 'WorkoutPlan', label: 'Workout', icon: 'workout' },
+  { name: 'MealPlan', label: 'Meals', icon: 'food' },
+  { name: 'Community', label: 'Community', icon: 'users' },
+  { name: 'Profile', label: 'Profile', icon: 'user' },
+] as const;
+
+export const BottomBar: React.FC<BottomBarProps> = ({ activeScreen, setActiveScreen }) => {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+    const dynamicStyles = getStyles(isDark);
+
+    return (
+        <div style={dynamicStyles.container} className="mobile-only">
+            {navItems.map(item => {
+                const isActive = activeScreen === item.name;
+                const iconColor = isActive ? colors.primary : (isDark ? colors.gray[400] : colors.slate[500]);
+                const buttonStyle = isActive ? {...styles.tabItem, ...dynamicStyles.tabItemActive} : styles.tabItem;
+                
+                return (
+                    <button key={item.name} onClick={() => setActiveScreen(item.name)} style={buttonStyle}>
+                        <Icon name={item.icon} size={22} color={iconColor} />
+                        <span style={{ ...styles.tabLabel, color: iconColor }}>{item.label}</span>
+                    </button>
+                )
+            })}
+        </div>
+    );
+};
+
+const styles: {[key: string]: React.CSSProperties} = {
+    tabItem: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px 12px',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        position: 'relative',
+        borderRadius: '14px',
+        maxWidth: '80px',
+    },
+    tabLabel: {
+        fontSize: '10px',
+        fontWeight: '700',
+        marginTop: '6px',
+        letterSpacing: '0.3px',
+    },
+};
+
+
+const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
+    container: {
+        display: 'flex',
+        height: '72px',
+        background: isDark 
+            ? 'rgba(15, 23, 42, 0.95)'
+            : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        boxShadow: isDark
+            ? '0 -8px 32px rgba(0, 0, 0, 0.6), 0 -2px 12px rgba(16, 185, 129, 0.05)'
+            : '0 -8px 32px rgba(0, 0, 0, 0.08), 0 -2px 12px rgba(0, 0, 0, 0.02)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        padding: '8px 12px',
+        gap: '4px',
+    },
+    tabItemActive: {
+        background: isDark 
+            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)'
+            : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+        transform: 'translateY(-2px)',
+        boxShadow: isDark
+            ? '0 4px 12px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(16, 185, 129, 0.3)'
+            : '0 4px 12px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.2)',
+    },
+});
