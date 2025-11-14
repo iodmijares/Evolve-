@@ -4,7 +4,7 @@ import { useUser } from '../../context/UserContext';
 import { ChallengeItem } from './ChallengeItem';
 import { Card } from '../shared/Card';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography, spacing } from '../../styles/theme';
+import { colors, spacing } from '../../styles/theme';
 
 export const PersonalChallengesList: React.FC = () => {
     const { challenges } = useUser();

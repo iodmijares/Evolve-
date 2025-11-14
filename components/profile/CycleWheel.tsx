@@ -3,7 +3,7 @@
 import React from 'react';
 import type { MenstrualPhase } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography } from '../../styles/theme';
+import { colors } from '../../styles/theme';
 
 interface CycleWheelProps {
     dayOfCycle: number;

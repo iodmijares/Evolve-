@@ -4,7 +4,7 @@ import type { Meal } from '../../types';
 import { useUser } from '../../context/UserContext';
 import { Icon } from '../shared/Icon';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography, spacing } from '../../styles/theme';
+import { colors, typography } from '../../styles/theme';
 
 interface LoggedMealItemProps {
     meal: Meal;

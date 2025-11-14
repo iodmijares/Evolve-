@@ -9,7 +9,7 @@ import { colors, typography, spacing } from '../../styles/theme';
 import { Spinner } from '../shared/Spinner';
 
 const MealPlan: React.FC = () => {
-    const { user, weeklyMealPlan, generateAndSetWeeklyMealPlan, isMealPlanLoading, markMealAsLogged } = useUser();
+        const { weeklyMealPlan, isMealPlanLoading, generateAndSetWeeklyMealPlan, markMealAsLogged } = useUser();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const styles = getStyles(isDark);

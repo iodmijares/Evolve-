@@ -1,4 +1,4 @@
-import { MenstrualPhase, MealType } from "../types";
+import type { MenstrualPhase } from '../types';
 
 export const calculateMenstrualPhase = (
   lastPeriodStartDate: string,

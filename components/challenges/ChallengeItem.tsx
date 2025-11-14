@@ -2,7 +2,7 @@
 import React from 'react';
 import type { Challenge } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography, spacing } from '../../styles/theme';
+import { colors, spacing } from '../../styles/theme';
 
 interface ChallengeItemProps {
     challenge: Challenge;

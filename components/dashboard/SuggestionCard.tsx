@@ -21,7 +21,7 @@ interface SuggestionCardProps {
 const STATIC_MEAL_IMAGE_URL = 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1887&auto=format&fit=crop';
 const STATIC_WORKOUT_IMAGE_URL = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop';
 
-const SuggestionCard: React.FC<SuggestionCardProps> = ({ type, title, data, onRefresh, isLoading, cyclePhase }) => {
+const SuggestionCard: React.FC<SuggestionCardProps> = ({ type, data, onRefresh, isLoading, cyclePhase }) => {
     const { logMeal, logWorkout } = useUser();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -33,7 +33,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({ type, title, data, onRe
 
     const imageUrl = type === 'meal' ? STATIC_MEAL_IMAGE_URL : STATIC_WORKOUT_IMAGE_URL;
 
-    const isMeal = (d: Meal | Workout): d is Meal => type === 'meal';
+    const isMeal = (_d: Meal | Workout): _d is Meal => type === 'meal';
 
     const handleAction = () => {
         if (isMeal(data)) {

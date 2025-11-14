@@ -1,5 +1,5 @@
 import type { Achievement } from '../types';
-import type { UserProfile, DailyMacros, Meal, Workout, DailyLog, WeightEntry } from '../types';
+import type { UserProfile, Meal, Workout, DailyLog } from '../types';
 
 const staticAchievements: Achievement[] = [
     {
