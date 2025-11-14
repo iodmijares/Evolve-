@@ -6,6 +6,7 @@ import WorkoutPlan from '../workout_plan/WorkoutPlan';
 import MealPlan from '../meal_plan/MealPlan';
 import CommunityHub from '../community/CommunityHub';
 import Profile from '../profile/Profile';
+import { Walkthrough } from '../shared/Walkthrough';
 
 export type ScreenName = 'Dashboard' | 'Journal' | 'WorkoutPlan' | 'MealPlan' | 'Community' | 'Profile';
 
@@ -29,6 +30,7 @@ export const AppLayout: React.FC = () => {
                 <ActiveComponent />
             </main>
             <BottomBar activeScreen={activeScreen} setActiveScreen={setActiveScreen} />
+            <Walkthrough />
         </div>
     );
 };
