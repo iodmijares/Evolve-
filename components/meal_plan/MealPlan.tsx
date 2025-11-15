@@ -177,7 +177,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     generateButtonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     },
     planContainer: {

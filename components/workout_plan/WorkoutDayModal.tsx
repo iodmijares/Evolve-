@@ -149,7 +149,7 @@ const getTimerStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     timerText: {
         fontSize: 36,
-        fontWeight: 'bold',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },
@@ -166,7 +166,7 @@ const getTimerStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     buttonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
     },
     startButton: { backgroundColor: colors.primary },
     pauseButton: { backgroundColor: colors.accent },
@@ -188,7 +188,7 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     detailsText: {
         ...typography.body,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[300] : colors.muted,
         margin: 0,
     },
@@ -230,7 +230,7 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     completeButtonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     },
 });

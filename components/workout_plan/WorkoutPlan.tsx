@@ -213,7 +213,7 @@ const getStyles = (isDark: boolean, numColumns: number) => {
         },
         generateButtonText: {
             color: colors.light,
-            fontWeight: '600',
+            fontWeight: 600 as React.CSSProperties['fontWeight'],
             fontSize: 16,
         },
         errorText: {
@@ -257,7 +257,7 @@ const getStyles = (isDark: boolean, numColumns: number) => {
         },
         dayNumber: {
             fontSize: 10,
-            fontWeight: 'bold',
+            fontWeight: 700 as React.CSSProperties['fontWeight'],
         },
         dayContent: {
             flex: 1,
@@ -268,7 +268,7 @@ const getStyles = (isDark: boolean, numColumns: number) => {
         },
         dayTitle: {
             fontSize: 10,
-            fontWeight: '600',
+            fontWeight: 600 as React.CSSProperties['fontWeight'],
             textAlign: 'center',
             marginTop: 4,
             margin: 0,

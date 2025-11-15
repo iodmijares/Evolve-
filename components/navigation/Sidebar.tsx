@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, setActiveScreen 
 const styles: {[key: string]: React.CSSProperties} = {
     logo: {
         fontSize: '28px',
-        fontWeight: '800',
+        fontWeight: 800 as React.CSSProperties['fontWeight'],
         background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
@@ -71,7 +71,7 @@ const styles: {[key: string]: React.CSSProperties} = {
         alignItems: 'center',
         gap: '12px',
         padding: '12px 14px',
-        borderRadius: '12px',
+        borderRadius: '16px',
         cursor: 'pointer',
         textDecoration: 'none',
         transition: 'all 0.2s ease',
@@ -81,7 +81,7 @@ const styles: {[key: string]: React.CSSProperties} = {
     },
     navLabel: {
         fontSize: '15px',
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
     },
 };
 
@@ -116,6 +116,6 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
     navLabelActive: {
         ...styles.navLabel,
         color: colors.primary,
-        fontWeight: '700',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
     }
 });

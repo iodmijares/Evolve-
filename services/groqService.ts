@@ -1,7 +1,6 @@
 import Groq from "groq-sdk";
 import { 
-    DailyMacros, 
-
+    DailyMacros,
     DailyLog, 
     MenstrualPhase, 
     CycleFocusInsight, 
@@ -11,8 +10,7 @@ import {
     WorkoutPlan, 
     WeeklyMealPlan, 
     Challenge, 
-    UserProfile,
- 
+    UserProfile
 } from '../types';
 
 export interface CommunityInsight {
@@ -33,7 +31,7 @@ const getGroqClient = () => {
             console.error("❌ VITE_GROQ_API_KEY not found in environment variables");
             throw new Error("VITE_GROQ_API_KEY environment variable not set. Please add it to your .env file.");
         }
-        console.log("✅ Initializing Groq client with API key:", API_KEY.substring(0, 20) + "...");
+        console.log("✅ Initializing Groq client with API key:", API_KEY.substring(0, 2) + "...");
         groq = new Groq({ 
             apiKey: API_KEY,
             dangerouslyAllowBrowser: true // For web apps
@@ -51,23 +49,36 @@ const parseJsonResponse = <T>(jsonString: string, context: string): T => {
         // Remove markdown code blocks if present
         let cleanedString = jsonString.replace(/^```json\s*|```\s*$/g, '').trim();
         
+        // Remove any non-printable characters and control characters except newlines and tabs
+        cleanedString = cleanedString.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
+        
         // Try to extract JSON if wrapped in text
-        const jsonMatch = cleanedString.match(/\{[\s\S]*\}/);
+        const jsonMatch = cleanedString.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
         if (jsonMatch) {
             cleanedString = jsonMatch[0];
         }
         
+        // Additional cleanup: normalize whitespace within the JSON
+        cleanedString = cleanedString
+            .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+            .replace(/\s*([{}[\]:,])\s*/g, '$1')  // Remove spaces around JSON structural characters
+            .replace(/"\s*:\s*/g, '":')  // Clean up key-value separators
+            .replace(/,\s*}/g, '}')  // Remove trailing commas before closing braces
+            .replace(/,\s*]/g, ']');  // Remove trailing commas before closing brackets
+        
         const parsed = JSON.parse(cleanedString);
         
-        // Validate that we got an object
-        if (!parsed || typeof parsed !== 'object') {
-            throw new Error('Parsed result is not an object');
+        // Validate that we got an object or array
+        if (!parsed || (typeof parsed !== 'object' && !Array.isArray(parsed))) {
+            throw new Error('Parsed result is not an object or array');
         }
         
         return parsed as T;
     } catch (error) {
-        console.error(`Error parsing JSON for ${context}:`, error, "\nRaw string:", jsonString);
-        throw new Error(`AI returned a response in an unexpected format for ${context}. ${error instanceof Error ? error.message : ''}`);
+        console.error(`Error parsing JSON for ${context}:`, error);
+        console.error('Raw response:', jsonString);
+        console.error('First 200 chars:', jsonString.substring(0, 200));
+        throw new Error(`AI returned a response in an unexpected format for ${context}. Please try again.`);
     }
 };
 
@@ -220,21 +231,29 @@ User Profile:
 - Age: ${user.age}
 - Gender: ${user.gender}
 
-Return ONLY valid JSON array with exactly 30 days. Each day must have:
+Return ONLY valid JSON with this structure:
 {
-    "day": 1,
-    "type": "workout" or "rest",
-    "isCompleted": false,
-    "workout": {
-        "name": "Creative workout name",
-        "type": "Strength, Cardio, HIIT, Flexibility, or Active Recovery",
-        "duration": 30,
-        "description": "Detailed plan with exercises, sets, reps. Use \\n for line breaks"
-    }
+    "plan": [
+        {
+            "day": 1,
+            "type": "workout",
+            "isCompleted": false,
+            "workout": {
+                "name": "Creative workout name",
+                "type": "Strength, Cardio, HIIT, Flexibility, or Active Recovery",
+                "duration": 30,
+                "description": "Detailed plan with exercises, sets, reps. Use newlines for clarity"
+            }
+        },
+        {
+            "day": 2,
+            "type": "rest",
+            "isCompleted": false
+        }
+    ]
 }
 
-For rest days, omit the workout object.
-
+Create exactly 30 days. For rest days, omit the workout object.
 Make it progressive and balanced. A moderately active user might have 5-on, 2-off split.`;
 
         const response = await getGroqClient().chat.completions.create({
@@ -242,11 +261,13 @@ Make it progressive and balanced. A moderately active user might have 5-on, 2-of
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             max_tokens: 4000,
+            response_format: { type: "json_object" }
         });
 
         const content = response.choices[0]?.message?.content || "";
         if (!content) throw new Error("AI response was empty for workout plan generation.");
-        return parseJsonResponse<WorkoutPlan>(content, "workout plan generation");
+        const result = parseJsonResponse<{ plan: WorkoutPlan }>(content, "workout plan generation");
+        return result.plan || result as unknown as WorkoutPlan;
     } catch (error: any) {
         if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
             throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");
@@ -303,18 +324,23 @@ Return ONLY valid JSON array with 7 days (Monday-Sunday). Each day:
     "dailyTotals": {"calories": 2000, "protein": 150, "carbs": 200, "fat": 60}
 }
 
-Meals should be quick (under 30-40 minutes), varied, and aligned with goals.`;
+Meals should be quick (under 30-40 minutes), varied, and aligned with goals.
+
+Return as JSON object with "plan" key containing the 7-day array:
+{ "plan": [ {...Monday...}, {...Tuesday...}, ... ] }`;
 
         const response = await getGroqClient().chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             max_tokens: 6000,
+            response_format: { type: "json_object" }
         });
 
         const content = response.choices[0]?.message?.content || "";
         if (!content) throw new Error("AI response was empty for weekly meal plan generation.");
-        return parseJsonResponse<WeeklyMealPlan>(content, "weekly meal plan generation");
+        const result = parseJsonResponse<{ plan: WeeklyMealPlan }>(content, "weekly meal plan generation");
+        return result.plan || result as unknown as WeeklyMealPlan;
     } catch (error: any) {
         if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
             throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");

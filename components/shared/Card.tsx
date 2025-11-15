@@ -30,17 +30,17 @@ export const Card: React.FC<CardProps> = ({ title, icon, children, style }) => {
 const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => ({
     card: {
         background: isDark 
-            ? 'rgba(30, 41, 59, 0.7)'
-            : 'rgba(255, 255, 255, 0.95)',
+            ? 'rgba(31, 41, 55, 0.95)'
+            : 'rgba(255, 255, 255, 0.98)',
         backdropFilter: 'blur(20px)',
         padding: '24px',
-        borderRadius: '20px',
+        borderRadius: '16px',
         marginBottom: '16px',
         boxShadow: isDark
-            ? '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)'
-            : '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.04)',
+            ? '0 4px 16px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2)'
+            : '0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04)',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
     },
     header: {
         display: 'flex',
@@ -51,9 +51,9 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     title: {
         fontSize: '18px',
-        fontWeight: '800',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
-        letterSpacing: '-0.4px',
+        letterSpacing: '-0.3px',
     }
 });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
-import { UserProfile, Gender, ActivityLevel, Goal } from '../../types';
+import { UserProfile, Gender, ActivityLevel, Goal, DietaryPreference } from '../../types';
 import { OnboardingStep } from './OnboardingStep';
 import { Icon } from '../shared/Icon';
 import { Spinner } from '../shared/Spinner';
@@ -37,6 +37,7 @@ const Onboarding: React.FC = () => {
         weight: undefined,
         activityLevel: undefined,
         goal: undefined,
+        dietaryPreferences: [],
         nationality: '',
         lastPeriodStartDate: undefined,
         cycleLength: 28,
@@ -137,6 +138,8 @@ const Onboarding: React.FC = () => {
                         <form onSubmit={handleEmailSubmit} style={authStyles.formContainer}>
                             {!isLoginView && (
                                 <input
+                                    id="fullName"
+                                    name="fullName"
                                     value={data.name || ''}
                                     onChange={(e) => updateData('name', e.target.value)}
                                     placeholder="Full Name"
@@ -146,6 +149,8 @@ const Onboarding: React.FC = () => {
                                 />
                             )}
                             <input
+                                id="email"
+                                name="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email Address"
@@ -154,6 +159,8 @@ const Onboarding: React.FC = () => {
                                 autoComplete="email"
                             />
                             <input
+                                id="password"
+                                name="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Password"
@@ -193,6 +200,7 @@ const Onboarding: React.FC = () => {
                                         setAuthMessage(null);
                                     }}
                                     style={authStyles.toggleButton}
+                                    aria-label={isLoginView ? 'Switch to Sign Up' : 'Switch to Log In'}
                                 >
                                     {isLoginView ? ' Sign Up' : ' Log In'}
                                 </button>
@@ -208,8 +216,41 @@ const Onboarding: React.FC = () => {
                         <div style={styles.stepContainer}>
                             <OnboardingStep isVisible={step === 1} title="About You" icon="user">
                                 <div style={styles.stepContent}>
-                                    <input placeholder="Name" value={data.name} onChange={(e) => updateData('name', e.target.value)} className="input" />
-                                    <input placeholder="Age" value={data.age?.toString() || ''} onChange={(e) => updateData('age', parseInt(e.target.value))} className="input" type="number" />
+                                    <input 
+                                        id="name" 
+                                        name="name" 
+                                        placeholder="Name" 
+                                        value={data.name} 
+                                        onChange={(e) => updateData('name', e.target.value)} 
+                                        className="input"
+                                        aria-label="Name"
+                                    />
+                                    <input 
+                                        id="age"
+                                        name="age"
+                                        placeholder="Age" 
+                                        value={data.age?.toString() || ''} 
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow empty or only digits
+                                            if (value === '' || /^\d+$/.test(value)) {
+                                                updateData('age', value === '' ? undefined : parseInt(value));
+                                            }
+                                        }} 
+                                        onBlur={(e) => {
+                                            // Validate on blur
+                                            const numValue = parseInt(e.target.value);
+                                            if (numValue && (numValue < 13 || numValue > 120)) {
+                                                alert('Age must be between 13 and 120');
+                                                updateData('age', undefined);
+                                            }
+                                        }}
+                                        className="input" 
+                                        type="text"
+                                        inputMode="numeric"
+                                        aria-label="Age"
+                                        autoComplete="off"
+                                    />
                                     <Picker<Gender>
                                         selectedValue={data.gender}
                                         onValueChange={(v) => updateData('gender', v)}
@@ -220,14 +261,63 @@ const Onboarding: React.FC = () => {
                                             { label: "Prefer not to say", value: "prefer_not_to_say" }
                                         ]}
                                     />
-                                    <input placeholder="Nationality (optional)" value={data.nationality} onChange={(e) => updateData('nationality', e.target.value)} className="input" />
+                                    <input 
+                                        id="nationality"
+                                        name="nationality"
+                                        placeholder="Nationality (optional)" 
+                                        value={data.nationality} 
+                                        onChange={(e) => updateData('nationality', e.target.value)} 
+                                        className="input"
+                                        autoComplete="country-name"
+                                        aria-label="Nationality"
+                                    />
                                 </div>
                             </OnboardingStep>
                             
                             <OnboardingStep isVisible={step === 2} title="Your Body" icon="badge">
                                 <div style={styles.stepContent}>
-                                    <input placeholder="Height (cm)" value={data.height?.toString() || ''} onChange={(e) => updateData('height', parseFloat(e.target.value))} className="input" type="number" />
-                                    <input placeholder="Current Weight (kg)" value={data.weight?.toString() || ''} onChange={(e) => updateData('weight', parseFloat(e.target.value))} className="input" type="number" />
+                                    <input 
+                                        id="height"
+                                        name="height"
+                                        placeholder="Height (cm)" 
+                                        value={data.height?.toString() || ''} 
+                                        onChange={(e) => {
+                                            updateData('height', e.target.value ? parseFloat(e.target.value) : undefined);
+                                        }} 
+                                        onBlur={(e) => {
+                                            const value = parseFloat(e.target.value);
+                                            if (value && (value < 100 || value > 250)) {
+                                                alert('Height must be between 100 and 250 cm');
+                                                updateData('height', undefined);
+                                            }
+                                        }}
+                                        className="input" 
+                                        type="number" 
+                                        step="0.1"
+                                        aria-label="Height in centimeters"
+                                        autoComplete="off"
+                                    />
+                                    <input 
+                                        id="weight"
+                                        name="weight"
+                                        placeholder="Current Weight (kg)" 
+                                        value={data.weight?.toString() || ''} 
+                                        onChange={(e) => {
+                                            updateData('weight', e.target.value ? parseFloat(e.target.value) : undefined);
+                                        }} 
+                                        onBlur={(e) => {
+                                            const value = parseFloat(e.target.value);
+                                            if (value && (value < 30 || value > 300)) {
+                                                alert('Weight must be between 30 and 300 kg');
+                                                updateData('weight', undefined);
+                                            }
+                                        }}
+                                        className="input" 
+                                        type="number" 
+                                        step="0.1"
+                                        aria-label="Current weight in kilograms"
+                                        autoComplete="off"
+                                    />
                                 </div>
                             </OnboardingStep>
                             
@@ -256,17 +346,101 @@ const Onboarding: React.FC = () => {
                                     />
                                 </div>
                             </OnboardingStep>
+
+                            <OnboardingStep isVisible={step === 4} title="Dietary Preferences" icon="utensils">
+                                <div style={styles.stepContent}>
+                                    <p style={{...getStyles(isDark).subtitle, marginBottom: '16px', textAlign: 'center'}}>
+                                        Select any dietary preferences or restrictions (optional)
+                                    </p>
+                                    <div style={styles.checkboxGrid}>
+                                        {[
+                                            { label: "None", value: "none" as DietaryPreference },
+                                            { label: "Vegetarian", value: "vegetarian" as DietaryPreference },
+                                            { label: "Vegan", value: "vegan" as DietaryPreference },
+                                            { label: "Pescatarian", value: "pescatarian" as DietaryPreference },
+                                            { label: "Keto", value: "keto" as DietaryPreference },
+                                            { label: "Paleo", value: "paleo" as DietaryPreference },
+                                            { label: "Gluten Free", value: "gluten_free" as DietaryPreference },
+                                            { label: "Dairy Free", value: "dairy_free" as DietaryPreference },
+                                            { label: "Halal", value: "halal" as DietaryPreference },
+                                            { label: "Kosher", value: "kosher" as DietaryPreference },
+                                        ].map((pref) => {
+                                            const isSelected = data.dietaryPreferences?.includes(pref.value);
+                                            return (
+                                                <button
+                                                    key={pref.value}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const current = data.dietaryPreferences || [];
+                                                        if (pref.value === 'none') {
+                                                            updateData('dietaryPreferences', isSelected ? [] : ['none']);
+                                                        } else {
+                                                            const filtered = current.filter(p => p !== 'none');
+                                                            updateData(
+                                                                'dietaryPreferences',
+                                                                isSelected 
+                                                                    ? filtered.filter(p => p !== pref.value)
+                                                                    : [...filtered, pref.value]
+                                                            );
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        ...styles.checkboxButton,
+                                                        backgroundColor: isSelected 
+                                                            ? (isDark ? colors.emerald[600] : colors.emerald[500])
+                                                            : (isDark ? colors.gray[800] : colors.gray[100]),
+                                                        color: isSelected 
+                                                            ? '#fff'
+                                                            : (isDark ? colors.gray[300] : colors.gray[700]),
+                                                        borderColor: isSelected
+                                                            ? (isDark ? colors.emerald[500] : colors.emerald[600])
+                                                            : (isDark ? colors.gray[700] : colors.gray[300]),
+                                                    }}
+                                                >
+                                                    {pref.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </OnboardingStep>
                             
                             {isFemale && (
-                                <OnboardingStep isVisible={step === 4} title="Cycle Tracking" icon="cycle">
+                                <OnboardingStep isVisible={step === 5} title="Cycle Tracking" icon="cycle">
                                     <div style={styles.stepContent}>
                                         <div>
-                                            <label style={getStyles(isDark).label}>Last Period Start Date</label>
-                                            <input placeholder="YYYY-MM-DD" value={data.lastPeriodStartDate || ''} onChange={(e) => updateData('lastPeriodStartDate', e.target.value)} className="input" type="date"/>
+                                            <label style={getStyles(isDark).label} htmlFor="periodDate">Last Period Start Date</label>
+                                            <input 
+                                                id="periodDate"
+                                                name="periodDate"
+                                                placeholder="YYYY-MM-DD" 
+                                                value={data.lastPeriodStartDate || ''} 
+                                                onChange={(e) => updateData('lastPeriodStartDate', e.target.value)} 
+                                                className="input" 
+                                                type="date"
+                                                max={new Date().toISOString().split('T')[0]}
+                                                aria-label="Last period start date"
+                                            />
                                         </div>
                                         <div>
-                                            <label style={getStyles(isDark).label}>Average Cycle Length (days)</label>
-                                            <input value={data.cycleLength?.toString() || ''} onChange={(e) => updateData('cycleLength', parseInt(e.target.value))} className="input" type="number" />
+                                            <label style={getStyles(isDark).label} htmlFor="cycleLength">Average Cycle Length (days)</label>
+                                            <input 
+                                                id="cycleLength"
+                                                name="cycleLength"
+                                                value={data.cycleLength?.toString() || ''} 
+                                                onChange={(e) => {
+                                                    const value = parseInt(e.target.value);
+                                                    if (!e.target.value || (value >= 21 && value <= 40)) {
+                                                        updateData('cycleLength', value || 28);
+                                                    }
+                                                }} 
+                                                className="input" 
+                                                type="number"
+                                                min="21"
+                                                max="40"
+                                                aria-label="Average cycle length in days"
+                                                autoComplete="off"
+                                            />
                                         </div>
                                     </div>
                                 </OnboardingStep>
@@ -284,7 +458,13 @@ const Onboarding: React.FC = () => {
                         </div>
 
                         <div style={styles.navigation}>
-                            <button onClick={handleBack} disabled={step === 1 || isOnboardingLoading} style={{...styles.navArrow, opacity: step === 1 ? 0.5 : 1}}>
+                            <button 
+                                onClick={handleBack} 
+                                disabled={step === 1 || isOnboardingLoading} 
+                                style={{...styles.navArrow, opacity: step === 1 ? 0.5 : 1}}
+                                aria-label="Go back to previous step"
+                                title="Back"
+                            >
                                 <Icon name="arrow-left" size={24} color={isDark ? colors.gray[400] : colors.muted} />
                             </button>
                             {step < totalSteps && (
@@ -308,36 +488,54 @@ const styles: {[key: string]: React.CSSProperties} = {
     },
     progressBarContainer: {
         width: '100%',
-        height: '8px',
+        height: '6px',
         borderRadius: '999px',
         overflow: 'hidden',
     },
     progressBar: {
-        height: '8px',
+        height: '6px',
         background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
         borderRadius: '999px',
-        transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
+        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
+        position: 'relative',
     },
     stepContainer: {
-        minHeight: '280px',
-        maxHeight: '400px',
+        minHeight: '300px',
+        maxHeight: '420px',
         overflowY: 'auto',
         overflowX: 'hidden',
-        padding: '4px',
+        padding: '8px',
+        scrollBehavior: 'smooth',
     },
     stepContent: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '18px',
+        gap: '20px',
+        animation: 'slideIn 0.3s ease',
+    },
+    checkboxGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '12px',
+    },
+    checkboxButton: {
+        padding: '14px 16px',
+        borderRadius: '16px',
+        border: '2px solid',
+        cursor: 'pointer',
+        fontSize: '14px',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
+        transition: 'all 0.2s ease',
+        textAlign: 'center',
     },
     finishContainer: {
         textAlign: 'center',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '20px',
-        padding: '20px 0',
+        gap: '24px',
+        padding: '32px 0',
     },
     errorText: {
         color: colors.red[400],
@@ -345,7 +543,7 @@ const styles: {[key: string]: React.CSSProperties} = {
         textAlign: 'center',
         padding: '12px',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        borderRadius: '8px',
+        borderRadius: '12px',
     },
     finishButton: {
         width: '100%',
@@ -356,13 +554,14 @@ const styles: {[key: string]: React.CSSProperties} = {
         justifyContent: 'space-between',
         alignItems: 'center',
         gap: '16px',
+        paddingTop: '8px',
     },
     navArrow: {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        padding: '8px',
-        borderRadius: '8px',
+        padding: '12px',
+        borderRadius: '16px',
         transition: 'all 0.2s ease',
         display: 'flex',
         alignItems: 'center',
@@ -379,7 +578,7 @@ const authStyles: {[key:string]: React.CSSProperties} = {
     formContainer: {
         display: 'flex',
         flexDirection: 'column',
-        gap: 16,
+        gap: 20,
     },
     toggleContainer: {
         display: 'flex',
@@ -391,7 +590,7 @@ const authStyles: {[key:string]: React.CSSProperties} = {
         border: 'none',
         padding: 0,
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: colors.primary,
         cursor: 'pointer',
     }
@@ -412,23 +611,24 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
     },
     card: {
         width: '100%',
-        maxWidth: '540px',
-        borderRadius: '20px',
-        padding: '40px 32px',
+        maxWidth: '520px',
+        borderRadius: '24px',
+        padding: '48px 36px',
         boxShadow: isDark 
-            ? '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-            : '0 20px 60px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.1)',
+            ? '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)'
+            : '0 25px 50px rgba(16, 185, 129, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.08)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '28px',
-        backgroundColor: isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        gap: '32px',
+        backgroundColor: isDark ? 'rgba(31, 41, 55, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(30px)',
         position: 'relative',
         zIndex: 1,
+        animation: 'fadeIn 0.5s ease',
     },
     title: {
-        fontSize: '32px',
-        fontWeight: '700',
+        fontSize: '36px',
+        fontWeight: 800 as React.CSSProperties['fontWeight'],
         background: isDark 
             ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
             : 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
@@ -436,14 +636,17 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
         margin: 0,
-        marginBottom: '8px',
-        letterSpacing: '-0.5px',
-    },
+        marginBottom: '12px',
+        letterSpacing: '-0.8px',
+        textAlign: 'center',
+    } as React.CSSProperties,
     subtitle: {
-        fontSize: '15px',
+        fontSize: '16px',
         color: isDark ? colors.gray[400] : colors.slate[600],
         margin: 0,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
+        textAlign: 'center',
+        lineHeight: '1.5',
     },
     progressBarContainer: {
         ...styles.progressBarContainer,
@@ -454,16 +657,17 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
         color: isDark ? colors.gray[300] : colors.slate[700],
         marginBottom: '6px',
         display: 'block',
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
     },
 });
 
 const getAuthStyles = (isDark: boolean): {[key:string]: React.CSSProperties} => ({
     errorContainer: {
-        backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : colors.red[50],
-        padding: 12,
-        borderRadius: 8,
+        backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : colors.red[50],
+        padding: 14,
+        borderRadius: 16,
         textAlign: 'center',
+        border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.3)' : colors.red[200]}`,
     },
     errorText: {
         color: isDark ? colors.red[400] : colors.red[700],
@@ -471,10 +675,11 @@ const getAuthStyles = (isDark: boolean): {[key:string]: React.CSSProperties} => 
         margin: 0,
     },
     messageContainer: {
-        backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : colors.emerald[50],
-        padding: 12,
-        borderRadius: 8,
+        backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : colors.emerald[50],
+        padding: 14,
+        borderRadius: 16,
         textAlign: 'center',
+        border: `1px solid ${isDark ? 'rgba(16, 185, 129, 0.3)' : colors.emerald[200]}`,
     },
     messageText: {
         color: isDark ? colors.emerald[300] : colors.emerald[700],

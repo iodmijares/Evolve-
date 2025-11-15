@@ -204,13 +204,13 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
         background: isDark 
             ? 'rgba(255, 255, 255, 0.04)'
             : 'rgba(0, 0, 0, 0.02)',
-        borderRadius: '12px',
+        borderRadius: '16px',
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'}`,
     },
     changeIndicator: {
         width: '32px',
         height: '32px',
-        borderRadius: '10px',
+        borderRadius: '12px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -218,14 +218,14 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     statValue: {
         fontSize: '16px',
-        fontWeight: '800',
+        fontWeight: 800 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
         letterSpacing: '-0.3px',
     },
     statLabel: {
         fontSize: '11px',
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[500] : colors.slate[500],
         margin: 0,
         marginTop: '2px',
@@ -253,7 +253,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     emptyText: {
         fontSize: '14px',
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[500] : colors.slate[500],
         textAlign: 'center',
         lineHeight: '1.5',

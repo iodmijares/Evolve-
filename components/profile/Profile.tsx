@@ -348,7 +348,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
             : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(10px)',
         padding: '24px',
-        borderRadius: '20px',
+        borderRadius: '16px',
         boxShadow: isDark
             ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
             : '0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
@@ -389,21 +389,21 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     name: {
         fontSize: '28px',
-        fontWeight: '800',
+        fontWeight: 800 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
         letterSpacing: '-0.5px',
     },
     realName: {
         fontSize: '13px',
-        fontWeight: '400',
+        fontWeight: 400 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[400] : colors.slate[500],
         margin: 0,
         marginTop: '2px',
     },
     goal: {
         fontSize: '14px',
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: colors.primary,
         textTransform: 'uppercase',
         margin: 0,
@@ -416,7 +416,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
             ? 'rgba(255, 255, 255, 0.05)'
             : 'rgba(0, 0, 0, 0.04)',
         border: 'none',
-        borderRadius: '12px',
+        borderRadius: '16px',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
     },
@@ -432,7 +432,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     statLabel: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         margin: 0,
     },
     cycleGrid: {
@@ -473,7 +473,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         background: isDark
             ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)'
             : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-        borderRadius: '12px',
+        borderRadius: '16px',
         marginTop: '16px',
         border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)'}`,
         cursor: 'pointer',
@@ -482,7 +482,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     logoutText: {
         fontSize: '15px',
-        fontWeight: '700',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
         color: isDark ? '#fca5a5' : '#b91c1c',
     }
 });
@@ -501,7 +501,7 @@ const getWorkoutStyles = (isDark: boolean): { [key: string]: React.CSSProperties
         background: isDark 
             ? 'rgba(255, 255, 255, 0.04)'
             : 'rgba(0, 0, 0, 0.02)',
-        borderRadius: '12px',
+        borderRadius: '16px',
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
         transition: 'all 0.2s ease',
     },
@@ -510,21 +510,21 @@ const getWorkoutStyles = (isDark: boolean): { [key: string]: React.CSSProperties
             ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)'
             : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
         padding: '10px',
-        borderRadius: '10px',
+        borderRadius: '16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
     },
     workoutName: {
         fontSize: '15px',
-        fontWeight: '700',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
         letterSpacing: '-0.2px',
     },
     workoutDetails: {
         fontSize: '13px',
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[400] : colors.slate[600],
         margin: 0,
         marginTop: '2px',
@@ -532,7 +532,7 @@ const getWorkoutStyles = (isDark: boolean): { [key: string]: React.CSSProperties
     emptyText: {
         textAlign: 'center',
         fontSize: '14px',
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[500] : colors.slate[500],
         margin: 0,
         padding: '20px',

@@ -129,7 +129,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     mealType: {
         ...typography.body,
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: colors.primary,
         margin: 0,
     },
@@ -195,7 +195,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     logButtonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     }
 });

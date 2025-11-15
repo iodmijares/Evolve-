@@ -68,7 +68,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     name: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 14,
         color: isDark ? colors.light : colors.dark,
         margin: 0,
@@ -98,7 +98,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     removeButtonText: {
         color: isDark ? colors.red[400] : colors.red[700],
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
     }
 });
 

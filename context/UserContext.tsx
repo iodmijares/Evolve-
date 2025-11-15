@@ -623,6 +623,32 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
 
     const generateAndSetWeeklyMealPlan = useCallback(async () => {
         if (!user || isMealPlanLoading) return;
+        
+        // Check if current meal plan exists and has unlogged meals
+        if (weeklyMealPlan) {
+            // Count total meals and logged meals
+            let totalMeals = 0;
+            let loggedMeals = 0;
+            
+            weeklyMealPlan.forEach(day => {
+                ['breakfast', 'lunch', 'dinner', 'snack'].forEach(mealType => {
+                    const meal = day[mealType as keyof Pick<MealPlanDay, 'breakfast' | 'lunch' | 'dinner' | 'snack'>];
+                    if (meal) {
+                        totalMeals++;
+                        if (meal.isLogged) loggedMeals++;
+                    }
+                });
+            });
+            
+            // Only regenerate if all meals are logged
+            if (loggedMeals < totalMeals) {
+                console.log(`🍽️ Meal plan in progress: ${loggedMeals}/${totalMeals} meals logged`);
+                return;
+            }
+            
+            console.log("🎉 All meals logged! Generating new weekly meal plan...");
+        }
+        
         setIsMealPlanLoading(true);
         try {
             // Enhanced personalization using menstrual cycle phase
@@ -639,7 +665,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         } catch (err) {
             console.error("Error generating meal plan:", (err as Error).message || err); throw err;
         } finally { setIsMealPlanLoading(false); }
-    }, [user, macros, isMealPlanLoading, getCacheKey]);
+    }, [user, macros, isMealPlanLoading, weeklyMealPlan, getCacheKey]);
 
     const markWorkoutAsComplete = useCallback(async (day: number) => {
         if (!user || !workoutPlan) return;
@@ -701,7 +727,11 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         if (!session?.user) throw new Error("No active session");
         const profileToUpsert = toDBShape({ id: session.user.id, ...profileData, onboardingDate: new Date().toISOString() });
         const { data, error } = await supabase.from('profiles').upsert(profileToUpsert).select().single();
-        if (error || !data) throw error || new Error("Failed to save profile during onboarding.");
+        if (error) {
+            console.error("Profile save error:", error);
+            throw new Error(error.message || "Failed to save profile. Please try again.");
+        }
+        if (!data) throw new Error("Failed to save profile during onboarding.");
         const fullProfile: UserProfile = { ...fromDBShape(data), email: session.user.email! };
         setUser(fullProfile);
         setIsOnboardingComplete(true);

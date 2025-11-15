@@ -213,7 +213,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     phaseText: {
         fontSize: 12,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: colors.fuchsia[800],
         marginLeft: spacing.xs,
         margin: 0,
@@ -247,7 +247,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     rationaleText: {
         fontSize: 12,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.emerald[300] : colors.emerald[800],
         marginLeft: spacing.sm,
         flex: 1,
@@ -308,7 +308,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
         cursor: 'pointer',
     },
     buttonText: {
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
         color: colors.light,
     },

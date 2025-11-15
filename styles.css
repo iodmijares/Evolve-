@@ -1,4 +1,5 @@
 :root {
+    /* Brand Colors */
     --primary: #10b981;
     --primary-focus: #059669;
     --primary-light: #34d399;
@@ -9,6 +10,14 @@
     --base: #f8fafc;
     --muted: #64748b;
     --border: #e2e8f0;
+    
+    /* Standardized Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 999px;
 
     --color-text-base: var(--dark);
     --color-text-muted: var(--muted);
@@ -146,45 +155,91 @@ html.dark .layout {
   100% { transform: rotate(360deg); }
 }
 
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Input Styles */
 .input {
     width: 100%;
-    padding: 14px 16px;
-    border: 2px solid transparent;
-    background-color: var(--color-bg-light);
+    padding: 16px 18px;
+    border: 1.5px solid transparent;
+    background-color: var(--slate-50);
     color: var(--color-text-base);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 15px;
-    height: 52px;
-    transition: all 0.2s ease;
+    height: 56px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
+    letter-spacing: -0.01em;
 }
 
 html.dark .input {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.input:hover:not(:focus) {
+    background-color: var(--slate-100);
+    border-color: var(--slate-200);
+}
+
+html.dark .input:hover:not(:focus) {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 .input:focus {
     outline: none;
     border-color: var(--primary);
-    background-color: var(--color-bg-light);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    background-color: var(--light);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12), 0 2px 8px rgba(16, 185, 129, 0.08);
     transform: translateY(-1px);
 }
 
 html.dark .input:focus {
-    background-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
 .input::placeholder {
     color: var(--slate-400);
     font-weight: 400;
+    opacity: 0.7;
 }
 
 html.dark .input::placeholder {
     color: var(--gray-500);
+    opacity: 0.6;
 }
 
 .textarea {
@@ -197,22 +252,24 @@ html.dark .input::placeholder {
 .btn {
     width: 100%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-focus) 100%);
-    padding: 15px;
-    border-radius: 12px;
+    padding: 17px 24px;
+    border-radius: var(--radius-lg);
     align-items: center;
     border: none;
     cursor: pointer;
     color: var(--light);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 16px;
+    letter-spacing: -0.01em;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: var(--spacing-sm);
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3), 0 1px 3px rgba(16, 185, 129, 0.2);
     position: relative;
     overflow: hidden;
+    height: 56px;
 }
 
 .btn::before {
@@ -222,13 +279,13 @@ html.dark .input::placeholder {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s ease;
 }
 
 .btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4), 0 2px 6px rgba(16, 185, 129, 0.25);
 }
 
 .btn:hover:not(:disabled)::before {
@@ -236,8 +293,8 @@ html.dark .input::placeholder {
 }
 
 .btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    transform: translateY(0) scale(0.99);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
 .btn:disabled {
@@ -245,11 +302,86 @@ html.dark .input::placeholder {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 html.dark .btn:disabled {
     background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-600) 100%);
+}
+
+/* Card Styles */
+.card {
+    background-color: var(--light);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+html.dark .card {
+    background-color: var(--gray-800);
+    border-color: var(--gray-700);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-compact {
+    padding: var(--spacing-md);
+}
+
+.card-large {
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+}
+
+/* Container Styles */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+.container-sm {
+    max-width: 600px;
+}
+
+.container-md {
+    max-width: 900px;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.badge-primary {
+    background-color: var(--emerald-100);
+    color: var(--emerald-800);
+}
+
+html.dark .badge-primary {
+    background-color: var(--emerald-900);
+    color: var(--emerald-300);
+}
+
+.badge-secondary {
+    background-color: var(--sky-100);
+    color: var(--sky-800);
+}
+
+.badge-warning {
+    background-color: var(--amber-50);
+    color: var(--amber-800);
 }
 
 /* Responsive visibility */

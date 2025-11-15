@@ -39,6 +39,7 @@ export interface Workout {
 export type Gender = 'male' | 'female' | 'prefer_not_to_say';
 export type ActivityLevel = 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active';
 export type Goal = 'weight_loss' | 'muscle_gain' | 'maintenance';
+export type DietaryPreference = 'none' | 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo' | 'gluten_free' | 'dairy_free' | 'halal' | 'kosher';
 
 export interface UserProfile {
     id: string;
@@ -51,6 +52,7 @@ export interface UserProfile {
     weight: number; // in kg
     activityLevel: ActivityLevel;
     goal: Goal;
+    dietaryPreferences?: DietaryPreference[];
     nationality?: string;
     lastPeriodStartDate?: string; // YYYY-MM-DD
     cycleLength?: number;

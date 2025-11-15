@@ -106,7 +106,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     summary: {
         cursor: 'pointer',
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         marginBottom: spacing.sm,
     },
     errorText: {
@@ -123,7 +123,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: 'none',
         cursor: 'pointer',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         marginRight: spacing.sm,
     },
     linkButton: {
@@ -134,6 +134,6 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: `2px solid ${colors.primary}`,
         cursor: 'pointer',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
     },
 };

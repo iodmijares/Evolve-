@@ -188,7 +188,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     caloriesText: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.gray[400] : colors.muted,
         margin: 0,
     },
@@ -219,7 +219,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     workoutName: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },

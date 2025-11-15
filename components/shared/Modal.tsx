@@ -101,14 +101,17 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 const getModalViewStyles = (isDark: boolean): React.CSSProperties => ({
     backgroundColor: isDark ? colors.gray[800] : colors.light,
-    borderRadius: '20px',
+    borderRadius: '16px',
     width: '90%',
     maxWidth: '600px',
     maxHeight: '90%',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+    boxShadow: isDark 
+        ? '0 20px 50px rgba(0, 0, 0, 0.5)'
+        : '0 20px 50px rgba(0, 0, 0, 0.15)',
     display: 'flex',
     flexDirection: 'column',
     color: isDark ? colors.light : colors.dark,
+    border: isDark ? `1px solid ${colors.gray[700]}` : `1px solid ${colors.border}`,
 });
 
 const getHeaderStyles = (isDark: boolean): React.CSSProperties => ({

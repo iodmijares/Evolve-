@@ -89,7 +89,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     recText: {
         fontSize: 10,
-        fontWeight: 'bold',
+        fontWeight: 700 as React.CSSProperties['fontWeight'],
         color: colors.primary,
     },
     buttonText: {

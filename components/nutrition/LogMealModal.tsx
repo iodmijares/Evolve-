@@ -141,7 +141,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     label: {
         ...typography.body,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
     },
     errorText: {
@@ -160,7 +160,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     buttonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     },
     switch: {

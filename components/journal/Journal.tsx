@@ -162,7 +162,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean = false): { [key: string]
     },
     fabText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     }
 });

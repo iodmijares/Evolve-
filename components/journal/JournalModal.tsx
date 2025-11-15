@@ -214,7 +214,7 @@ const getAIStyles = (isDark: boolean): { [key: string]: React.CSSProperties } =>
     },
     heading: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         marginBottom: spacing.xs,
         margin: 0,
@@ -244,7 +244,7 @@ const getAIStyles = (isDark: boolean): { [key: string]: React.CSSProperties } =>
     themeText: {
         color: colors.primary,
         fontSize: 12,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
     },
     disclaimer: {
         ...typography.subtle,
@@ -267,7 +267,7 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     date: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: colors.primary,
         textAlign: 'center',
         marginTop: -spacing.sm,
@@ -344,7 +344,7 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     },
     buttonText: {
         color: colors.light,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     }
 });

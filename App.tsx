@@ -9,61 +9,47 @@ import { ErrorBoundary } from './components/shared/ErrorBoundary';
 import { logger } from './utils/logger';
 
 const AppContent: React.FC = () => {
-    try {
-        const { session, isOnboardingComplete, isLoading } = useUser();
+    const { session, isOnboardingComplete, isLoading } = useUser();
 
-        logger.debug('AppContent state', { context: 'App', data: { session: !!session, isOnboardingComplete, isLoading } });
+    logger.debug('AppContent state', { context: 'App', data: { session: !!session, isOnboardingComplete, isLoading } });
 
-        if (isLoading) {
-            return (
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    height: '100vh' 
-                }}>
-                    <Spinner size="lg" />
-                </div>
-            );
-        }
-
-        if (!session) {
-            logger.debug('No session, showing Auth', { context: 'App' });
-            return <Auth />;
-        }
-
-        if (!isOnboardingComplete) {
-            logger.debug('Onboarding incomplete', { context: 'App' });
-            return <Onboarding />;
-        }
-
-        logger.debug('Showing main app', { context: 'App' });
-        return <AppLayout />;
-    } catch (error) {
-        logger.error('AppContent error', error, { context: 'App' });
+    if (isLoading) {
         return (
-            <div style={{ padding: '20px', color: 'red' }}>
-                <h1>Error in AppContent</h1>
-                <pre>{String(error)}</pre>
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh' 
+            }}>
+                <Spinner size="lg" />
             </div>
         );
     }
+
+    if (!session) {
+        logger.debug('No session, showing Auth', { context: 'App' });
+        return <Auth />;
+    }
+
+    if (!isOnboardingComplete) {
+        logger.debug('Onboarding incomplete', { context: 'App' });
+        return <Onboarding />;
+    }
+
+    logger.debug('Showing main app', { context: 'App' });
+    return <AppLayout />;
 };
 
 const App: React.FC = () => {
     return (
         <ErrorBoundary>
-            <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-                <ThemeProvider>
-                    <ErrorBoundary>
-                        <UserProvider>
-                            <ErrorBoundary>
-                                <AppContent />
-                            </ErrorBoundary>
-                        </UserProvider>
-                    </ErrorBoundary>
-                </ThemeProvider>
-            </div>
+            <ThemeProvider>
+                <UserProvider>
+                    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+                        <AppContent />
+                    </div>
+                </UserProvider>
+            </ThemeProvider>
         </ErrorBoundary>
     );
 }

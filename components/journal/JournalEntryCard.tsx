@@ -70,7 +70,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     date: {
         ...typography.body,
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
         color: colors.primary,
         margin: 0,
     },
@@ -91,7 +91,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     aiInsightText: {
         ...typography.body,
         fontSize: 10,
-        fontWeight: '500',
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
     },
     content: {
