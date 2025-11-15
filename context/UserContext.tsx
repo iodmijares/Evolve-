@@ -247,47 +247,74 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                     cachingService.getOrSet(
                         `evolve_${userId}_meals_${today}`,
                         10 * 60 * 1000,
-                        async () => await supabase.from('meals').select('*').eq('user_id', userId).eq('date', today)
+                        async () => {
+                            const { data } = await supabase.from('meals').select('*').eq('user_id', userId).eq('date', today);
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_workout_history`,
                         30 * 60 * 1000,
-                        async () => await supabase.from('workouts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50)
+                        async () => {
+                            const { data } = await supabase.from('workouts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50);
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_weight_history`,
                         30 * 60 * 1000,
-                        async () => await supabase.from('weight_logs').select('*').eq('user_id', userId).order('date', { ascending: true })
+                        async () => {
+                            const { data } = await supabase.from('weight_logs').select('*').eq('user_id', userId).order('date', { ascending: true });
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_daily_logs`,
                         15 * 60 * 1000,
-                        async () => await supabase.from('daily_logs').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(90)
+                        async () => {
+                            const { data } = await supabase.from('daily_logs').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(90);
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_journal_entries`,
                         15 * 60 * 1000,
-                        async () => await supabase.from('journal_entries').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(50)
+                        async () => {
+                            const { data } = await supabase.from('journal_entries').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(50);
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_workout_plan`,
                         60 * 60 * 1000,
-                        async () => await supabase.from('workout_plans').select('plan').eq('user_id', userId).maybeSingle()
+                        async () => {
+                            const { data } = await supabase.from('workout_plans').select('plan').eq('user_id', userId).maybeSingle();
+                            return data;
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_meal_plan`,
                         60 * 60 * 1000,
-                        async () => await supabase.from('meal_plans').select('plan').eq('user_id', userId).maybeSingle()
+                        async () => {
+                            const { data } = await supabase.from('meal_plans').select('plan').eq('user_id', userId).maybeSingle();
+                            return data;
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_earned_achievements`,
                         30 * 60 * 1000,
-                        async () => await supabase.from('earned_achievements').select('achievement_id').eq('user_id', userId)
+                        async () => {
+                            const { data } = await supabase.from('earned_achievements').select('achievement_id').eq('user_id', userId);
+                            return { data };
+                        }
                     ),
                     cachingService.getOrSet(
                         `evolve_${userId}_challenges`,
                         15 * 60 * 1000,
-                        async () => await supabase.from('challenges').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+                        async () => {
+                            const { data } = await supabase.from('challenges').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+                            return { data };
+                        }
                     ),
                 ]);
 
@@ -613,7 +640,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
             }
             setWorkoutPlan(plan);
             const key = getCacheKey('workout_plan');
-            if (key) cachingService.set(key, plan);
+            if (key) await cachingService.set(key, { plan });
         } catch (err) {
             console.error("❌ Error generating workout plan:", err);
             console.error("Error details:", (err as any).status, (err as Error).message);
@@ -660,8 +687,8 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
             const { error } = await supabase.from('meal_plans').upsert({ user_id: user.id, plan: plan }, { onConflict: 'user_id' });
             if (error) throw error;
             setWeeklyMealPlan(plan);
-            const key = getCacheKey('weekly_meal_plan');
-            if (key) cachingService.set(key, plan);
+            const key = getCacheKey('meal_plan');
+            if (key) await cachingService.set(key, { plan });
         } catch (err) {
             console.error("Error generating meal plan:", (err as Error).message || err); throw err;
         } finally { setIsMealPlanLoading(false); }
@@ -673,12 +700,12 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         const updatedPlan = workoutPlan.map(planDay => planDay.day === day ? { ...planDay, isCompleted: true } : planDay);
         setWorkoutPlan(updatedPlan);
         const key = getCacheKey('workout_plan');
-        if (key) cachingService.set(key, updatedPlan);
+        if (key) await cachingService.set(key, { plan: updatedPlan });
         const { error } = await supabase.from('workout_plans').update({ plan: updatedPlan }).eq('user_id', user.id);
         if (error) {
             console.error("Error updating workout completion:", error);
             setWorkoutPlan(originalPlan); 
-            if (key) cachingService.set(key, originalPlan);
+            if (key) await cachingService.set(key, { plan: originalPlan });
             throw error;
         }
     }, [user, workoutPlan, getCacheKey]);
@@ -710,15 +737,15 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         setWeeklyMealPlan(updatedPlan);
 
         // Persist to cache and DB
-        const key = getCacheKey('weekly_meal_plan');
-        if (key) cachingService.set(key, updatedPlan);
+        const key = getCacheKey('meal_plan');
+        if (key) await cachingService.set(key, { plan: updatedPlan });
         
         const { error } = await supabase.from('meal_plans').update({ plan: updatedPlan }).eq('user_id', user.id);
         
         if (error) {
             console.error("Error updating meal plan completion:", error);
             setWeeklyMealPlan(originalPlan);
-            if (key) cachingService.set(key, originalPlan);
+            if (key) await cachingService.set(key, { plan: originalPlan });
             throw error;
         }
     }, [user, weeklyMealPlan, logMeal, getCacheKey]);
