@@ -289,7 +289,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                         60 * 60 * 1000,
                         async () => {
                             const { data } = await supabase.from('workout_plans').select('plan').eq('user_id', userId).maybeSingle();
-                            return data;
+                            return data?.plan || null;
                         }
                     ),
                     cachingService.getOrSet(
@@ -297,7 +297,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                         60 * 60 * 1000,
                         async () => {
                             const { data } = await supabase.from('meal_plans').select('plan').eq('user_id', userId).maybeSingle();
-                            return data;
+                            return data?.plan || null;
                         }
                     ),
                     cachingService.getOrSet(
@@ -326,8 +326,8 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                     if (weightRes?.data) setWeightHistory(weightRes.data.map(fromDBShape<WeightEntry>));
                     if (dailyLogsRes?.data) setDailyLogs(dailyLogsRes.data.map(fromDBShape<DailyLog>));
                     if (journalRes?.data) setJournalEntries(journalRes.data.map(fromDBShape<JournalEntry>));
-                    if (workoutPlanRes?.data) setWorkoutPlan(workoutPlanRes.data.plan as WorkoutPlan);
-                    if (mealPlanRes?.data) setWeeklyMealPlan(mealPlanRes.data.plan as WeeklyMealPlan);
+                    if (workoutPlanRes) setWorkoutPlan(workoutPlanRes as WorkoutPlan);
+                    if (mealPlanRes) setWeeklyMealPlan(mealPlanRes as WeeklyMealPlan);
                     if (earnedRes?.data) setEarnedAchievementIds(new Set(earnedRes.data.map((a: any) => a.achievement_id)));
                     if (challengesRes?.data) setChallenges(challengesRes.data.map(fromDBShape<Challenge>));
                 } catch (dataError) {
@@ -380,28 +380,36 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     
     useEffect(() => {
         const fetchPatternInsight = async () => {
-            if (user && user.gender === 'female' && dailyLogs.length > 5 && !cyclePatternInsight) {
+            // Only generate if we have meaningful data and no existing insight
+            if (user && user.gender === 'female' && dailyLogs.length > 10 && !cyclePatternInsight && !isCyclePatternInsightLoading) {
                 const key = getCacheKey('cycle_pattern_insight');
                 if (key) {
-                    const cachedInsight = await cachingService.get<CyclePatternInsight>(key, 24 * 60 * 60 * 1000); // 24h TTL
+                    const cachedInsight = await cachingService.get<CyclePatternInsight>(key, 7 * 24 * 60 * 60 * 1000); // 7 days TTL - patterns change slowly
                     if (cachedInsight) {
                         setCyclePatternInsight(cachedInsight);
                         return;
                     }
                 }
-                setIsCyclePatternInsightLoading(true);
-                try {
-                    const insight = await generateCyclePatternInsight(user, dailyLogs);
-                    persistCyclePatternInsight(insight);
-                } catch (error) {
-                    console.error("Failed to generate cycle pattern insight:", error);
-                } finally {
-                    setIsCyclePatternInsightLoading(false);
-                }
+                
+                // Debounce the API call
+                const timeoutId = setTimeout(async () => {
+                    setIsCyclePatternInsightLoading(true);
+                    try {
+                        const insight = await generateCyclePatternInsight(user, dailyLogs);
+                        persistCyclePatternInsight(insight);
+                    } catch (error) {
+                        console.error("Failed to generate cycle pattern insight:", error);
+                        // Don't retry on error - user can manually refresh if needed
+                    } finally {
+                        setIsCyclePatternInsightLoading(false);
+                    }
+                }, 1000); // 1s debounce
+                
+                return () => clearTimeout(timeoutId);
             }
         };
         fetchPatternInsight();
-    }, [user, dailyLogs, cyclePatternInsight, getCacheKey]);
+    }, [user, dailyLogs.length, cyclePatternInsight, isCyclePatternInsightLoading, getCacheKey]);
 
     const checkAndLogAchievements = useCallback(async () => {
         if (!user) return;
@@ -615,7 +623,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         if (!user || isWorkoutPlanGenerating) return;
         
         // Check if current plan exists and is completed
-        if (workoutPlan) {
+        if (workoutPlan && Array.isArray(workoutPlan) && workoutPlan.length > 0) {
             const completedCount = workoutPlan.filter(day => day.isCompleted).length;
             const workoutDays = workoutPlan.filter(day => day.type === 'workout').length;
             
@@ -640,7 +648,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
             }
             setWorkoutPlan(plan);
             const key = getCacheKey('workout_plan');
-            if (key) await cachingService.set(key, { plan });
+            if (key) await cachingService.set(key, plan);
         } catch (err) {
             console.error("❌ Error generating workout plan:", err);
             console.error("Error details:", (err as any).status, (err as Error).message);
@@ -652,7 +660,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         if (!user || isMealPlanLoading) return;
         
         // Check if current meal plan exists and has unlogged meals
-        if (weeklyMealPlan) {
+        if (weeklyMealPlan && Array.isArray(weeklyMealPlan) && weeklyMealPlan.length > 0) {
             // Count total meals and logged meals
             let totalMeals = 0;
             let loggedMeals = 0;
@@ -688,30 +696,30 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
             if (error) throw error;
             setWeeklyMealPlan(plan);
             const key = getCacheKey('meal_plan');
-            if (key) await cachingService.set(key, { plan });
+            if (key) await cachingService.set(key, plan);
         } catch (err) {
             console.error("Error generating meal plan:", (err as Error).message || err); throw err;
         } finally { setIsMealPlanLoading(false); }
     }, [user, macros, isMealPlanLoading, weeklyMealPlan, getCacheKey]);
 
     const markWorkoutAsComplete = useCallback(async (day: number) => {
-        if (!user || !workoutPlan) return;
+        if (!user || !workoutPlan || !Array.isArray(workoutPlan)) return;
         const originalPlan = [...workoutPlan];
         const updatedPlan = workoutPlan.map(planDay => planDay.day === day ? { ...planDay, isCompleted: true } : planDay);
         setWorkoutPlan(updatedPlan);
         const key = getCacheKey('workout_plan');
-        if (key) await cachingService.set(key, { plan: updatedPlan });
+        if (key) await cachingService.set(key, updatedPlan);
         const { error } = await supabase.from('workout_plans').update({ plan: updatedPlan }).eq('user_id', user.id);
         if (error) {
             console.error("Error updating workout completion:", error);
             setWorkoutPlan(originalPlan); 
-            if (key) await cachingService.set(key, { plan: originalPlan });
+            if (key) await cachingService.set(key, originalPlan);
             throw error;
         }
     }, [user, workoutPlan, getCacheKey]);
 
     const markMealAsLogged = useCallback(async (dayOfWeek: string, mealType: keyof Pick<MealPlanDay, 'breakfast' | 'lunch' | 'dinner' | 'snack'>) => {
-        if (!user || !weeklyMealPlan) return;
+        if (!user || !weeklyMealPlan || !Array.isArray(weeklyMealPlan)) return;
 
         const originalPlan = [...weeklyMealPlan];
         const updatedPlan = JSON.parse(JSON.stringify(weeklyMealPlan)) as WeeklyMealPlan;
@@ -738,14 +746,14 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
 
         // Persist to cache and DB
         const key = getCacheKey('meal_plan');
-        if (key) await cachingService.set(key, { plan: updatedPlan });
+        if (key) await cachingService.set(key, updatedPlan);
         
         const { error } = await supabase.from('meal_plans').update({ plan: updatedPlan }).eq('user_id', user.id);
         
         if (error) {
             console.error("Error updating meal plan completion:", error);
             setWeeklyMealPlan(originalPlan);
-            if (key) await cachingService.set(key, { plan: originalPlan });
+            if (key) await cachingService.set(key, originalPlan);
             throw error;
         }
     }, [user, weeklyMealPlan, logMeal, getCacheKey]);

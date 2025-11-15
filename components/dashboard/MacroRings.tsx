@@ -57,6 +57,16 @@ const MacroRings: React.FC = () => {
     const { macros } = useUser();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const [ringSize, setRingSize] = React.useState(window.innerWidth < 375 ? 40 : 50);
+    
+    React.useEffect(() => {
+        const handleResize = () => {
+            setRingSize(window.innerWidth < 375 ? 40 : 50);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    
     const styles = getStyles(isDark);
     const { consumed, target } = macros;
 
@@ -68,9 +78,9 @@ const MacroRings: React.FC = () => {
         <div>
             <h3 style={styles.title}>Macronutrients</h3>
             <div style={styles.ringsRow}>
-                <Ring radius={50} stroke={8} progress={proteinProgress} color={colors.secondary} label="Protein" value={Math.round(consumed.protein)} />
-                <Ring radius={50} stroke={8} progress={carbsProgress} color={colors.primary} label="Carbs" value={Math.round(consumed.carbs)} />
-                <Ring radius={50} stroke={8} progress={fatProgress} color={colors.accent} label="Fat" value={Math.round(consumed.fat)} />
+                <Ring radius={ringSize} stroke={8} progress={proteinProgress} color={colors.secondary} label="Protein" value={Math.round(consumed.protein)} />
+                <Ring radius={ringSize} stroke={8} progress={carbsProgress} color={colors.primary} label="Carbs" value={Math.round(consumed.carbs)} />
+                <Ring radius={ringSize} stroke={8} progress={fatProgress} color={colors.accent} label="Fat" value={Math.round(consumed.fat)} />
             </div>
         </div>
     );
@@ -87,9 +97,10 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
     ringsRow: {
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
         paddingTop: 8,
+        gap: 4,
     },
     ringContainer: {
         display: 'flex',

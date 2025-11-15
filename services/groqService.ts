@@ -25,6 +25,23 @@ const API_KEY = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.GROQ_API_KE
 
 let groq: Groq | null = null;
 
+// Request deduplication - prevent duplicate concurrent calls
+const pendingRequests = new Map<string, Promise<any>>();
+
+const deduplicate = async <T>(key: string, factory: () => Promise<T>): Promise<T> => {
+    if (pendingRequests.has(key)) {
+        console.log(`⚡ Deduplicating request: ${key}`);
+        return pendingRequests.get(key) as Promise<T>;
+    }
+    
+    const promise = factory().finally(() => {
+        pendingRequests.delete(key);
+    });
+    
+    pendingRequests.set(key, promise);
+    return promise;
+};
+
 const getGroqClient = () => {
     if (!groq) {
         if (!API_KEY) {
@@ -83,16 +100,19 @@ const parseJsonResponse = <T>(jsonString: string, context: string): T => {
 };
 
 export const generateCycleInsight = async (phase: MenstrualPhase, _dailyLogs: DailyLog[], userId?: string): Promise<CycleFocusInsight> => {
-    // Check rate limit if userId provided
-    if (userId) {
-        const { aiTextLimiter, formatResetTime } = await import('../utils/rateLimiter');
-        const rateLimit = await aiTextLimiter.checkLimit(userId);
-        if (!rateLimit.allowed) {
-            throw new Error(`Rate limit exceeded. Please try again in ${formatResetTime(rateLimit.resetTime)}.`);
-        }
-    }
+    const dedupeKey = `cycle_insight_${phase}_${userId || 'anonymous'}`;
     
-    const prompt = `You are a women's health expert. Based on the user being in the ${phase} phase of their menstrual cycle, provide a "Daily Focus" insight in JSON format.
+    return deduplicate(dedupeKey, async () => {
+        // Check rate limit if userId provided
+        if (userId) {
+            const { aiTextLimiter, formatResetTime } = await import('../utils/rateLimiter');
+            const rateLimit = await aiTextLimiter.checkLimit(userId);
+            if (!rateLimit.allowed) {
+                throw new Error(`Rate limit exceeded. Please try again in ${formatResetTime(rateLimit.resetTime)}.`);
+            }
+        }
+        
+        const prompt = `You are a women's health expert. Based on the user being in the ${phase} phase of their menstrual cycle, provide a "Daily Focus" insight in JSON format.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -111,28 +131,52 @@ Keep the tone supportive and informative.`;
         max_tokens: 500,
     });
 
-    const content = response.choices[0]?.message?.content || "";
-    if (!content) throw new Error("AI response was empty for cycle insight.");
-    return parseJsonResponse<CycleFocusInsight>(content, "cycle insight");
+        const content = response.choices[0]?.message?.content || "";
+        if (!content) throw new Error("AI response was empty for cycle insight.");
+        return parseJsonResponse<CycleFocusInsight>(content, "cycle insight");
+    });
 };
 
+// Cache for symptom suggestions (static per phase)
+const symptomCache = new Map<MenstrualPhase, { data: string[]; timestamp: number }>();
+const SYMPTOM_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 export const generateSymptomSuggestions = async (phase: MenstrualPhase): Promise<string[]> => {
-    const prompt = `List 3-4 common symptoms a person might experience during the ${phase} phase of their menstrual cycle. Return ONLY a JSON array of strings. Example: ["symptom1", "symptom2", "symptom3"]`;
+    // Check cache first - symptoms per phase don't change often
+    const cached = symptomCache.get(phase);
+    if (cached && Date.now() - cached.timestamp < SYMPTOM_CACHE_TTL) {
+        console.log(`⚡ Using cached symptoms for ${phase}`);
+        return cached.data;
+    }
+    
+    const dedupeKey = `symptom_suggestions_${phase}`;
+    
+    return deduplicate(dedupeKey, async () => {
+        const prompt = `List 3-4 common symptoms a person might experience during the ${phase} phase of their menstrual cycle. Return ONLY a JSON array of strings. Example: ["symptom1", "symptom2", "symptom3"]`;
 
-    const response = await getGroqClient().chat.completions.create({
-        model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.5,
-        max_tokens: 200,
+        const response = await getGroqClient().chat.completions.create({
+            model: "llama-3.1-8b-instant",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.5,
+            max_tokens: 200,
+        });
+
+        const content = response.choices[0]?.message?.content || "";
+        if (!content) return [];
+        const symptoms = parseJsonResponse<string[]>(content, "symptom suggestions");
+        
+        // Cache the result
+        symptomCache.set(phase, { data: symptoms, timestamp: Date.now() });
+        return symptoms;
     });
-
-    const content = response.choices[0]?.message?.content || "";
-    if (!content) return [];
-    return parseJsonResponse<string[]>(content, "symptom suggestions");
 };
 
 export const generateCyclePatternInsight = async (user: UserProfile, dailyLogs: DailyLog[]): Promise<CyclePatternInsight> => {
-    const prompt = `Analyze the user's daily logs to find a recurring pattern related to their menstrual cycle.
+    const dedupeKey = `cycle_pattern_${user.id}_${dailyLogs.length}`;
+    
+    return deduplicate(dedupeKey, async () => {
+        try {
+            const prompt = `Analyze the user's daily logs to find a recurring pattern related to their menstrual cycle.
     
 User profile: Goal: ${user.goal}, Activity: ${user.activityLevel}
 Recent logs (mood and symptoms): ${JSON.stringify(dailyLogs.slice(0, 10))}
@@ -146,16 +190,26 @@ Return ONLY valid JSON with this exact structure:
 
 Be specific but gentle.`;
 
-    const response = await getGroqClient().chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 400,
-    });
+        const response = await getGroqClient().chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 400,
+        });
 
-    const content = response.choices[0]?.message?.content || "";
-    if (!content) throw new Error("AI response was empty for cycle pattern insight.");
-    return parseJsonResponse<CyclePatternInsight>(content, "cycle pattern insight");
+        const content = response.choices[0]?.message?.content || "";
+        if (!content) throw new Error("AI response was empty for cycle pattern insight.");
+        return parseJsonResponse<CyclePatternInsight>(content, "cycle pattern insight");
+    } catch (error: any) {
+        // Handle rate limit errors gracefully
+        if (error?.status === 429 || error?.message?.includes('429')) {
+            console.warn('⚠️ Rate limit reached for cycle pattern insight generation');
+            throw new Error('Rate limit reached. Please try again in a few moments.');
+        }
+            console.error('Error generating cycle pattern insight:', error);
+            throw error;
+        }
+    });
 };
 
 export const generateDynamicAchievements = async (user: UserProfile, completedAchievementIds: string[]): Promise<Omit<Achievement, 'isAiGenerated'>[]> => {
@@ -222,7 +276,12 @@ The tone should be supportive and non-clinical. Use '${displayName}' when referr
 };
 
 export const generateMonthlyWorkoutPlan = async (user: UserProfile): Promise<WorkoutPlan> => {
-    try {
+    const dedupeKey = `workout_plan_${user.id}_${user.goal}_${user.activityLevel}`;
+    
+    return deduplicate(dedupeKey, async () => {
+        try {
+            console.log('🏋️ Generating workout plan for user:', user.name);
+        
         const prompt = `Create a personalized 30-day workout plan for a user.
 
 User Profile:
@@ -267,20 +326,28 @@ Make it progressive and balanced. A moderately active user might have 5-on, 2-of
         const content = response.choices[0]?.message?.content || "";
         if (!content) throw new Error("AI response was empty for workout plan generation.");
         const result = parseJsonResponse<{ plan: WorkoutPlan }>(content, "workout plan generation");
+        console.log('✅ Workout plan generated successfully');
         return result.plan || result as unknown as WorkoutPlan;
     } catch (error: any) {
-        if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
-            throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");
+            console.error('❌ Error generating workout plan:', error);
+            if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
+                throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");
+            }
+            if (error.status === 429 || error.message?.includes('429')) {
+                throw new Error("Rate limit reached. Please try again in a few moments.");
+            }
+            throw error;
         }
-        if (error.status === 429) {
-            throw new Error("Groq API rate limit exceeded. Please try again in a few seconds.");
-        }
-        throw error;
-    }
+    });
 };
 
 export const generateWeeklyMealPlan = async (user: UserProfile, macros: DailyMacros, phase?: MenstrualPhase): Promise<WeeklyMealPlan> => {
-    try {
+    const dedupeKey = `meal_plan_${user.id}_${user.goal}_${phase || 'none'}_${macros.target.calories}`;
+    
+    return deduplicate(dedupeKey, async () => {
+        try {
+            console.log('🍽️ Generating meal plan for user:', user.name, 'Phase:', phase);
+        
         let phaseInstruction = '';
         if (phase && user.gender === 'female') {
             phaseInstruction = `
@@ -340,16 +407,19 @@ Return as JSON object with "plan" key containing the 7-day array:
         const content = response.choices[0]?.message?.content || "";
         if (!content) throw new Error("AI response was empty for weekly meal plan generation.");
         const result = parseJsonResponse<{ plan: WeeklyMealPlan }>(content, "weekly meal plan generation");
+        console.log('✅ Meal plan generated successfully');
         return result.plan || result as unknown as WeeklyMealPlan;
     } catch (error: any) {
-        if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
-            throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");
+            console.error('❌ Error generating meal plan:', error);
+            if (error.status === 401 || error.message?.includes('authentication') || error.message?.includes('API key')) {
+                throw new Error("Groq API authentication failed. Please check your VITE_GROQ_API_KEY in .env file.");
+            }
+            if (error.status === 429 || error.message?.includes('429')) {
+                throw new Error("Rate limit reached. Please try again in a few moments.");
+            }
+            throw error;
         }
-        if (error.status === 429) {
-            throw new Error("Groq API rate limit exceeded. Please try again in a few seconds.");
-        }
-        throw error;
-    }
+    });
 };
 
 export const generatePersonalChallenge = async (idea: string, user: UserProfile): Promise<Omit<Challenge, 'id' | 'isCompleted' | 'progress' | 'userId' | 'createdAt'>> => {

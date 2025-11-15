@@ -182,6 +182,7 @@ const Profile: React.FC = () => {
             const phaseDataForDate = calculatePhaseForDate(dateObj, user.lastPeriodStartDate, user.cycleLength);
             if (phaseDataForDate) {
                 try {
+                    // Symptoms are now cached in the service layer for 7 days
                     const symptoms = await generateSymptomSuggestions(phaseDataForDate.phase);
                     setModalSymptoms(symptoms);
                 } catch (e) {
@@ -347,7 +348,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
             ? 'rgba(31, 41, 55, 0.6)'
             : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(10px)',
-        padding: '24px',
+        padding: isDesktop ? '24px' : '16px',
         borderRadius: '16px',
         boxShadow: isDark
             ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
@@ -357,7 +358,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: '16px',
+        gap: isDesktop ? '16px' : '12px',
     },
     avatarContainer: {
         position: 'relative',
@@ -368,8 +369,8 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         transition: 'transform 0.2s ease',
     },
     avatar: {
-        width: '90px',
-        height: '90px',
+        width: isDesktop ? '90px' : '70px',
+        height: isDesktop ? '90px' : '70px',
         borderRadius: '50%',
         border: `4px solid ${isDark ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
@@ -388,7 +389,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         justifyContent: 'center',
     },
     name: {
-        fontSize: '28px',
+        fontSize: isDesktop ? '28px' : '22px',
         fontWeight: 800 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
@@ -423,6 +424,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     statsGrid: {
         display: 'flex',
         flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: spacing.md,
     },
     statValue: {
@@ -437,7 +439,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     cycleGrid: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: isDesktop ? 'row' : 'column',
         alignItems: 'center',
         gap: spacing.md
     },

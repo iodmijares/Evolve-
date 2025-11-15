@@ -27,7 +27,8 @@ const WorkoutPlan: React.FC = () => {
         const updateColumns = () => {
             if (window.innerWidth > breakpoints.lg) setNumColumns(7);
             else if (window.innerWidth > breakpoints.md) setNumColumns(5);
-            else setNumColumns(4);
+            else if (window.innerWidth > 400) setNumColumns(4);
+            else setNumColumns(3);
         };
         updateColumns();
         window.addEventListener('resize', updateColumns);
@@ -71,7 +72,7 @@ const WorkoutPlan: React.FC = () => {
             );
         }
 
-        if (!workoutPlan) {
+        if (!workoutPlan || !Array.isArray(workoutPlan) || workoutPlan.length === 0) {
             return (
                  <div style={styles.stateContainer}>
                     <Icon name="clipboard" size={48} color={colors.primary} />
@@ -167,11 +168,11 @@ const getStyles = (isDark: boolean, numColumns: number) => {
             marginBottom: spacing.lg,
         },
         title: {
-            ...typography.h1,
-            fontSize: 28,
-            color: isDark ? colors.light : colors.dark,
-            margin: 0,
-        },
+        ...typography.h1,
+        fontSize: 24,
+        color: isDark ? colors.light : colors.dark,
+        margin: 0,
+    },
         subtitle: {
             ...typography.subtle,
             color: isDark ? colors.gray[400] : colors.muted,

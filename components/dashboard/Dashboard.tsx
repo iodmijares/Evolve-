@@ -73,16 +73,21 @@ const Dashboard: React.FC = () => {
             return;
         }
 
-        Promise.all([
-            generateCycleInsight(currentPhase, dailyLogs),
-            generateSymptomSuggestions(currentPhase)
-        ]).then(([insightResult, symptomsResult]) => {
-            setCycleInsight(insightResult);
-            setSuggestedSymptoms(symptomsResult);
-        }).catch(err => {
-            console.error("Failed to fetch cycle insights:", err);
-            setError(getHumanReadableError(err));
-        });
+        // Debounce API calls to prevent rapid successive requests
+        const timeoutId = setTimeout(() => {
+            Promise.all([
+                generateCycleInsight(currentPhase, dailyLogs, user.id),
+                generateSymptomSuggestions(currentPhase)
+            ]).then(([insightResult, symptomsResult]) => {
+                setCycleInsight(insightResult);
+                setSuggestedSymptoms(symptomsResult);
+            }).catch(err => {
+                console.error("Failed to fetch cycle insights:", err);
+                setError(getHumanReadableError(err));
+            });
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timeoutId);
     }, [user, dailyLogs, currentPhase, cycleInsight, setCycleInsight]);
 
     if (!user) {
@@ -169,7 +174,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     container: {
         height: '100%',
         backgroundColor: isDark ? colors.dark : colors.base,
-        padding: spacing.md,
+        padding: isDesktop ? spacing.lg : spacing.md,
         overflowY: 'auto',
     },
     desktopGrid: {
@@ -272,8 +277,8 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     fab: {
         position: 'absolute',
-        bottom: 80, // Adjusted for bottom nav bar
-        right: 16,
+        bottom: isDesktop ? 24 : 84, // Account for bottom nav on mobile (68px navbar + 16px spacing)
+        right: isDesktop ? 24 : 16,
         backgroundColor: colors.primary,
         width: 60,
         height: 60,

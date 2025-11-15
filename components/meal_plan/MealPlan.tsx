@@ -55,17 +55,20 @@ const MealPlan: React.FC = () => {
 
         if (error) {
              return (
-                <div style={{...styles.stateContainer, backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : colors.red[50]}}>
-                    <h3 style={styles.stateTitle}>Oops! Something went wrong.</h3>
-                    <p style={{...styles.stateSubtitle, marginBottom: 12}}>{error}</p>
-                    <button onClick={handleGeneratePlan} style={{...styles.generateButton, backgroundColor: colors.red[700]}}>
-                        <span style={styles.generateButtonText}>Try Again</span>
+                <div style={styles.stateContainer}>
+                    <Icon name="food" size={48} color={colors.primary} />
+                    <h3 style={styles.stateTitle}>Your Weekly Meal Plan</h3>
+                    <p style={styles.stateSubtitle}>Let our AI create a personalized 7-day meal plan to help you reach your nutrition goals.</p>
+                    <button onClick={handleGeneratePlan} style={styles.generateButton} disabled={isMealPlanLoading}>
+                        <Icon name="lightbulb" size={20} color={colors.light} />
+                        <span style={styles.generateButtonText}>Generate My Plan</span>
                     </button>
+                    <p style={styles.errorText}>{error}</p>
                 </div>
             );
         }
 
-        if (!weeklyMealPlan) {
+        if (!weeklyMealPlan || !Array.isArray(weeklyMealPlan) || weeklyMealPlan.length === 0) {
             return (
                 <div style={styles.stateContainer}>
                     <Icon name="food" size={48} color={colors.primary} />
@@ -132,7 +135,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     title: {
         ...typography.h1,
-        fontSize: 28,
+        fontSize: 24,
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },
@@ -180,6 +183,12 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
         fontWeight: 600 as React.CSSProperties['fontWeight'],
         fontSize: 16,
     },
+    errorText: {
+        color: colors.red[400],
+        marginTop: spacing.sm,
+        margin: 0,
+        textAlign: 'center',
+    },
     planContainer: {
         flex: 1,
         display: 'flex',
@@ -205,7 +214,8 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
         textAlign: 'center',
     },
     dayTitle: {
-        ...typography.h1,
+        fontSize: 20,
+        fontWeight: '700',
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },

@@ -193,13 +193,17 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
         margin: 0,
     },
     macrosContainer: {
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'flex-end',
+        gap: 2,
     },
     macroText: {
         ...typography.subtle,
-        fontSize: 12,
+        fontSize: 11,
         color: isDark ? colors.gray[400] : colors.slate[500],
         margin: 0,
+        whiteSpace: 'nowrap',
     },
     itemsContainer: {
         borderTop: `1px solid ${isDark ? colors.gray[700] : colors.border}`,

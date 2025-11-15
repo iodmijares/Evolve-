@@ -60,7 +60,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     title: {
         ...typography.h1,
-        fontSize: 28,
+        fontSize: 24,
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },
@@ -71,7 +71,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     fab: {
         position: 'absolute',
-        bottom: 24,
+        bottom: 84,
         right: 16,
         backgroundColor: colors.accent,
         borderRadius: 28,

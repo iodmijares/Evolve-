@@ -21,6 +21,16 @@ const navItems = [
 export const BottomBar: React.FC<BottomBarProps> = ({ activeScreen, setActiveScreen }) => {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const [iconSize, setIconSize] = React.useState(window.innerWidth < 360 ? 20 : 22);
+    
+    React.useEffect(() => {
+        const handleResize = () => {
+            setIconSize(window.innerWidth < 360 ? 20 : 22);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    
     const dynamicStyles = getStyles(isDark);
 
     return (
@@ -32,7 +42,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ activeScreen, setActiveScr
                 
                 return (
                     <button key={item.name} onClick={() => setActiveScreen(item.name)} style={buttonStyle}>
-                        <Icon name={item.icon} size={22} color={iconColor} />
+                        <Icon name={item.icon} size={iconSize} color={iconColor} />
                         <span style={{ ...styles.tabLabel, color: iconColor }}>{item.label}</span>
                     </button>
                 )
@@ -48,20 +58,20 @@ const styles: {[key: string]: React.CSSProperties} = {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '10px 12px',
+        padding: '8px 4px',
         background: 'none',
         border: 'none',
         cursor: 'pointer',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
-        borderRadius: '16px',
-        maxWidth: '80px',
+        borderRadius: '12px',
+        minWidth: '48px',
     },
     tabLabel: {
-        fontSize: '10px',
+        fontSize: '9px',
         fontWeight: 700 as React.CSSProperties['fontWeight'],
-        marginTop: '6px',
-        letterSpacing: '0.3px',
+        marginTop: '4px',
+        letterSpacing: '0.2px',
     },
 };
 
@@ -69,7 +79,7 @@ const styles: {[key: string]: React.CSSProperties} = {
 const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
     container: {
         display: 'flex',
-        height: '72px',
+        height: '68px',
         background: isDark 
             ? 'rgba(15, 23, 42, 0.95)'
             : 'rgba(255, 255, 255, 0.95)',
@@ -86,8 +96,8 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
             ? '0 -8px 32px rgba(0, 0, 0, 0.6), 0 -2px 12px rgba(16, 185, 129, 0.05)'
             : '0 -8px 32px rgba(0, 0, 0, 0.08), 0 -2px 12px rgba(0, 0, 0, 0.02)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        padding: '8px 12px',
-        gap: '4px',
+        padding: '6px 8px',
+        gap: '2px',
     },
     tabItemActive: {
         background: isDark 

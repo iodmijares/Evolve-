@@ -105,7 +105,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean = false): { [key: string]
     },
     title: {
         ...typography.h1,
-        fontSize: 28,
+        fontSize: isDesktop ? 28 : 24,
         color: isDark ? colors.light : colors.dark,
         margin: 0,
     },
@@ -140,8 +140,8 @@ const getStyles = (isDark: boolean, isDesktop: boolean = false): { [key: string]
     },
     fab: {
         position: 'fixed',
-        bottom: isDesktop ? 100 : 110,
-        right: 24,
+        bottom: isDesktop ? 100 : 84,
+        right: isDesktop ? 24 : 16,
         backgroundColor: colors.primary,
         borderRadius: 28,
         padding: '14px 24px',
