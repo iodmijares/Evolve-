@@ -36,6 +36,11 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
     host: true,
+    allowedHosts: [
+      'localhost',
+      '.onrender.com',
+      '.vercel.app',
+    ],
   },
   preview: {
     port: 3000,
