@@ -135,7 +135,7 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     container: {
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.md,
+        gap: spacing.lg,
     },
     title: {
         ...typography.h2,
@@ -145,13 +145,14 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     groupsContainer: {
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.md,
+        gap: spacing.lg,
     },
     emptyState: {
         backgroundColor: isDark ? colors.gray[800] : colors.light,
-        borderRadius: 12,
-        padding: spacing.lg,
-        alignItems: 'center',
+        borderRadius: 16,
+        padding: spacing.xl,
+        textAlign: 'center',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     },
     emptyText: {
         ...typography.subtle,
@@ -160,26 +161,27 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     card: {
         backgroundColor: isDark ? colors.gray[800] : colors.light,
-        borderRadius: 12,
-        padding: spacing.md,
+        borderRadius: 16,
+        padding: spacing.lg,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     },
     header: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
     },
     headerLeft: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.sm,
+        gap: spacing.md,
     },
     iconContainer: {
         backgroundColor: isDark ? colors.gray[700] : colors.slate[100],
-        padding: 8,
-        borderRadius: 999,
+        padding: 10,
+        borderRadius: 12,
     },
     mealTypeTitle: {
         ...typography.h3,
@@ -207,19 +209,19 @@ const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => (
     },
     itemsContainer: {
         borderTop: `1px solid ${isDark ? colors.gray[700] : colors.border}`,
-        paddingTop: spacing.sm,
+        paddingTop: spacing.md,
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.xs,
+        gap: spacing.sm,
     },
     workoutItem: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: spacing.sm,
+        padding: spacing.md,
         backgroundColor: isDark ? colors.gray[700] : colors.slate[50],
-        borderRadius: 8,
+        borderRadius: 12,
     },
     workoutName: {
         ...typography.body,
