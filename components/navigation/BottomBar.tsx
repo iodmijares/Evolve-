@@ -1,25 +1,22 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '../shared/Icon';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../styles/theme';
-import { ScreenName } from './AppLayout';
-
-interface BottomBarProps {
-    activeScreen: ScreenName;
-    setActiveScreen: (screen: ScreenName) => void;
-}
 
 const navItems = [
-  { name: 'Dashboard', label: 'Home', icon: 'home' },
-  { name: 'Journal', label: 'Journal', icon: 'journal' },
-  { name: 'WorkoutPlan', label: 'Workout', icon: 'workout' },
-  { name: 'MealPlan', label: 'Meals', icon: 'food' },
-  { name: 'Community', label: 'Community', icon: 'users' },
-  { name: 'Profile', label: 'Profile', icon: 'user' },
+  { path: '/', label: 'Home', icon: 'home' },
+  { path: '/journal', label: 'Journal', icon: 'journal' },
+  { path: '/workout', label: 'Workout', icon: 'workout' },
+  { path: '/meals', label: 'Meals', icon: 'food' },
+  { path: '/community', label: 'Community', icon: 'users' },
+  { path: '/profile', label: 'Profile', icon: 'user' },
 ] as const;
 
-export const BottomBar: React.FC<BottomBarProps> = ({ activeScreen, setActiveScreen }) => {
+export const BottomBar: React.FC = () => {
     const { theme } = useTheme();
+    const navigate = useNavigate();
+    const location = useLocation();
     const isDark = theme === 'dark';
     const [iconSize, setIconSize] = React.useState(window.innerWidth < 360 ? 20 : 22);
     
@@ -36,13 +33,13 @@ export const BottomBar: React.FC<BottomBarProps> = ({ activeScreen, setActiveScr
     return (
         <div style={dynamicStyles.container} className="mobile-only">
             {navItems.map(item => {
-                const isActive = activeScreen === item.name;
+                const isActive = location.pathname === item.path;
                 const iconColor = isActive ? colors.primary : (isDark ? colors.gray[400] : colors.slate[500]);
                 const buttonStyle = isActive ? {...styles.tabItem, ...dynamicStyles.tabItemActive} : styles.tabItem;
                 
                 return (
-                    <button key={item.name} onClick={() => setActiveScreen(item.name)} style={buttonStyle}>
-                        <Icon name={item.icon} size={iconSize} color={iconColor} />
+                    <button key={item.path} onClick={() => navigate(item.path)} style={buttonStyle}>
+                        <Icon name={item.icon as any} size={iconSize} color={iconColor} />
                         <span style={{ ...styles.tabLabel, color: iconColor }}>{item.label}</span>
                     </button>
                 )

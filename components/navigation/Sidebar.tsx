@@ -1,28 +1,25 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '../shared/Icon';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../styles/theme';
-import { ScreenName } from './AppLayout';
 import { useUser } from '../../context/UserContext';
 
-interface SidebarProps {
-    activeScreen: ScreenName;
-    setActiveScreen: (screen: ScreenName) => void;
-}
-
 const navItems = [
-  { name: 'Dashboard', label: 'Home', icon: 'home' },
-  { name: 'Journal', label: 'Journal', icon: 'clipboard' },
-  { name: 'WorkoutPlan', label: 'Workout', icon: 'workout' },
-  { name: 'MealPlan', label: 'Meal Plan', icon: 'food' },
-  { name: 'Community', label: 'Community', icon: 'users' },
-  { name: 'Profile', label: 'Profile', icon: 'user' },
+  { path: '/', label: 'Home', icon: 'home' },
+  { path: '/journal', label: 'Journal', icon: 'clipboard' },
+  { path: '/workout', label: 'Workout', icon: 'workout' },
+  { path: '/meals', label: 'Meal Plan', icon: 'food' },
+  { path: '/community', label: 'Community', icon: 'users' },
+  { path: '/profile', label: 'Profile', icon: 'user' },
 ] as const;
 
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, setActiveScreen }) => {
+export const Sidebar: React.FC = () => {
     const { theme } = useTheme();
     const { logout } = useUser();
+    const navigate = useNavigate();
+    const location = useLocation();
     const isDark = theme === 'dark';
 
     return (
@@ -31,9 +28,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, setActiveScreen 
                 <h1 style={styles.logo}>Evolve</h1>
                 <div style={styles.navGroup}>
                     {navItems.map(item => {
-                        const isActive = activeScreen === item.name;
+                        const isActive = location.pathname === item.path;
                         return (
-                            <a key={item.name} onClick={() => setActiveScreen(item.name)} style={{...styles.navItem, ...(isActive ? getStyles(isDark).navItemActive : {})}}>
+                            <a key={item.path} onClick={() => navigate(item.path)} style={{...styles.navItem, ...(isActive ? getStyles(isDark).navItemActive : {})}}>
                                 <Icon name={item.icon} size={24} color={isActive ? colors.primary : (isDark ? colors.gray[400] : colors.muted)} />
                                 <span style={{...styles.navLabel, ...(isActive ? getStyles(isDark).navLabelActive : {})}}>{item.label}</span>
                             </a>

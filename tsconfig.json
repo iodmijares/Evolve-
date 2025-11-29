@@ -30,5 +30,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "exclude": [
+    "supabase",
+    "node_modules",
+    "dist"
+  ]
 }

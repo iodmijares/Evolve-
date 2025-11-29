@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserProvider, useUser } from './context/UserContext';
+import { BrowserRouter } from 'react-router-dom';
+import { UserProvider } from './context/UserContext';
 import Auth from './components/auth/Auth';
 import Onboarding from './components/onboarding/Onboarding';
 import { Spinner } from './components/shared/Spinner';
@@ -7,9 +8,14 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AppLayout } from './components/navigation/AppLayout';
 import { ErrorBoundary } from './components/shared/ErrorBoundary';
 import { logger } from './utils/logger';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { NutritionProvider } from './context/NutritionContext';
+import { FitnessProvider } from './context/FitnessContext';
+import { WellnessProvider } from './context/WellnessContext';
+import { CommunityProvider } from './context/CommunityContext';
 
 const AppContent: React.FC = () => {
-    const { session, isOnboardingComplete, isLoading } = useUser();
+    const { session, isOnboardingComplete, isLoading } = useAuth();
 
     logger.debug('AppContent state', { context: 'App', data: { session: !!session, isOnboardingComplete, isLoading } });
 
@@ -43,13 +49,25 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
     return (
         <ErrorBoundary>
-            <ThemeProvider>
-                <UserProvider>
-                    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-                        <AppContent />
-                    </div>
-                </UserProvider>
-            </ThemeProvider>
+            <BrowserRouter>
+                <ThemeProvider>
+                    <AuthProvider>
+                        <NutritionProvider>
+                            <FitnessProvider>
+                                <WellnessProvider>
+                                    <CommunityProvider>
+                                        <UserProvider>
+                                            <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+                                                <AppContent />
+                                            </div>
+                                        </UserProvider>
+                                    </CommunityProvider>
+                                </WellnessProvider>
+                            </FitnessProvider>
+                        </NutritionProvider>
+                    </AuthProvider>
+                </ThemeProvider>
+            </BrowserRouter>
         </ErrorBoundary>
     );
 }
