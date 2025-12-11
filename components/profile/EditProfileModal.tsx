@@ -8,6 +8,7 @@ import { Spinner } from '../shared/Spinner';
 import { Picker } from '../shared/Picker';
 import { useTheme } from '../../context/ThemeContext';
 import { colors, typography, spacing } from '../../styles/theme';
+import { getDefaultAvatar } from '../../utils/imageUtils';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -130,7 +131,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 <div style={styles.imageSection}>
                     <button onClick={handleImageUpload} style={styles.avatarButton} disabled={uploadingImage}>
                         <img 
-                            src={formData.profilePictureUrl || `https://i.pravatar.cc/150?u=${formData.name}`} 
+                            src={formData.profilePictureUrl || getDefaultAvatar(formData.gender, formData.name)} 
                             alt="Profile"
                             style={styles.avatar}
                         />

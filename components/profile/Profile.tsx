@@ -18,6 +18,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { colors, typography, spacing } from '../../styles/theme';
 import { generateSymptomSuggestions } from '../../services/groqService';
+import { getDefaultAvatar } from '../../utils/imageUtils';
 
 const WorkoutHistoryList: React.FC<{ workouts: Workout[] }> = ({ workouts }) => {
     const { theme } = useTheme();
@@ -202,7 +203,7 @@ const Profile: React.FC = () => {
                     <div style={styles.profileInfo}>
                         <button onClick={handlePictureUpload} style={styles.avatarContainer}>
                              <img 
-                                src={user.profilePictureUrl || `https://i.pravatar.cc/150?u=${user.name}`} 
+                                src={user.profilePictureUrl || getDefaultAvatar(user.gender, user.name)} 
                                 style={styles.avatar} 
                                 alt={`${user.name}'s profile`}
                             />

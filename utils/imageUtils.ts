@@ -103,3 +103,26 @@ export const fileToBase64 = async (blob: Blob, compress: boolean = true): Promis
         reader.readAsDataURL(blob);
     });
 };
+
+/**
+ * Gets a default profile picture URL based on gender
+ * Uses DiceBear avatars for consistent, gender-appropriate illustrations
+ * @param gender The user's gender ('male', 'female', or other)
+ * @param seed A unique seed for the avatar (e.g., user's name or id)
+ * @returns URL to a default avatar image
+ */
+export const getDefaultAvatar = (gender: string, seed: string): string => {
+    // Use DiceBear's avataaars style which supports gender-specific options
+    const encodedSeed = encodeURIComponent(seed);
+    
+    if (gender === 'male') {
+        // Male avatar with short hair styles
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&top=shortHair&facialHair=beardLight,beardMajestic,moustacheFancy,moustacheMagnum,blank&facialHairProbability=50&accessories=prescription01,prescription02,blank&accessoriesProbability=30`;
+    } else if (gender === 'female') {
+        // Female avatar with longer hair styles
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&top=longHair,hat&facialHairProbability=0&accessories=prescription01,prescription02,blank&accessoriesProbability=30`;
+    } else {
+        // Neutral/unspecified - use a friendly neutral style
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&facialHairProbability=0`;
+    }
+};

@@ -4,12 +4,14 @@ import { Icon } from '../shared/Icon';
 import type { Achievement } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../styles/theme';
+import { getDefaultAvatar } from '../../utils/imageUtils';
 
 interface AchievementFeedItemProps {
     userName: string;
     achievement: Achievement;
     timestamp: Date;
     profilePictureUrl?: string;
+    gender?: string;
 }
 
 // Helper to format time since event
@@ -28,7 +30,7 @@ const timeSince = (date: Date): string => {
     return Math.floor(seconds) + " seconds ago";
 };
 
-const AchievementFeedItem: React.FC<AchievementFeedItemProps> = ({ userName, achievement, timestamp, profilePictureUrl }) => {
+const AchievementFeedItem: React.FC<AchievementFeedItemProps> = ({ userName, achievement, timestamp, profilePictureUrl, gender }) => {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const styles = getStyles(isDark);
@@ -36,7 +38,7 @@ const AchievementFeedItem: React.FC<AchievementFeedItemProps> = ({ userName, ach
     return (
         <div style={styles.container}>
             <img 
-                src={profilePictureUrl || `https://i.pravatar.cc/150?u=${userName}`} 
+                src={profilePictureUrl || getDefaultAvatar(gender || 'prefer_not_to_say', userName)} 
                 style={styles.avatar}
                 alt={`${userName}'s avatar`}
             />

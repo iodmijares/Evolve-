@@ -14,6 +14,7 @@ interface FeedItem {
     id: string;
     userName: string;
     profilePictureUrl?: string;
+    gender?: string;
     achievement: Achievement;
     timestamp: Date | string; // Allow string for cache rehydration
 }
@@ -47,7 +48,7 @@ const AchievementFeed: React.FC = () => {
 
             const { data, error } = await supabase
                 .from('earned_achievements')
-                .select('id, earned_at, achievement_id, profiles (name, profile_picture_url)')
+                .select('id, earned_at, achievement_id, profiles (name, profile_picture_url, gender)')
                 .order('earned_at', { ascending: false })
                 .limit(pageSize);
 
@@ -67,6 +68,7 @@ const AchievementFeed: React.FC = () => {
                             id: item.id,
                             userName: item.profiles.name,
                             profilePictureUrl: item.profiles.profile_picture_url ?? undefined,
+                            gender: item.profiles.gender ?? undefined,
                             achievement,
                             timestamp: new Date(item.earned_at),
                         };
@@ -148,6 +150,7 @@ const AchievementFeed: React.FC = () => {
                     key={item.id}
                     userName={item.userName}
                     profilePictureUrl={item.profilePictureUrl}
+                    gender={item.gender}
                     achievement={item.achievement}
                     timestamp={new Date(item.timestamp)} // Ensure timestamp is a Date object
                 />
