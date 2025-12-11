@@ -97,7 +97,7 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
                 `evolve_${user.id}_meals_${today}`,
                 10 * 60 * 1000,
                 async () => {
-                    const { data } = await supabase.from('meals').select('*').eq('user_id', user.id).eq('date', today);
+                    const { data } = await supabase.from('meals').select('id, user_id, date, meal_type, name, calories, protein, carbs, fat, ingredients, instructions, description, rationale').eq('user_id', user.id).eq('date', today);
                     return { data };
                 }
             );

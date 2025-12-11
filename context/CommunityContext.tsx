@@ -54,7 +54,7 @@ export const CommunityProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
                 `evolve_${user.id}_challenges`,
                 15 * 60 * 1000,
                 async () => {
-                    const { data } = await supabase.from('challenges').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+                    const { data } = await supabase.from('challenges').select('id, user_id, title, description, type, metric, goal, progress, is_completed, is_ai_generated, created_at').eq('user_id', user.id).order('created_at', { ascending: false });
                     return { data };
                 }
             );

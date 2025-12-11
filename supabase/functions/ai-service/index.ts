@@ -127,20 +127,31 @@ Return ONLY valid JSON array with this exact structure:
 
       case 'analyzeJournalEntry': {
         const { entry, userName } = payload;
-        const displayName = userName || 'The user';
-        prompt = `Analyze this journal entry from ${displayName} in a wellness app.
+        const name = userName || 'there';
+        prompt = `You are a compassionate wellness companion. Read this journal entry and provide ONE gentle, practical suggestion that could genuinely help.
 
-Entry: "${entry.content}"
+Journal entry: "${entry.content}"
+Current mood: ${entry.mood || 'not specified'}, Energy level: ${entry.energy || 'not specified'}
 
-Return ONLY valid JSON with this exact structure:
+Respond with ONLY valid JSON:
 {
-    "summary": "A one-sentence summary of the main feeling or topic (refer to them as '${displayName}' not 'the user')",
-    "themes": ["Theme1", "Theme2", "Theme3"],
-    "suggestion": "A gentle, actionable suggestion based on the themes (frame as a question or kind invitation, addressing them as '${displayName}')"
+    "summary": "",
+    "themes": [],
+    "suggestion": "Your helpful message here"
 }
 
-The tone should be supportive and non-clinical. Use '${displayName}' when referring to the person.`;
-        max_tokens = 400;
+For the suggestion:
+- Address them warmly as "${name}"
+- Acknowledge their feelings first
+- Offer ONE specific, actionable thing they could try (e.g., a breathing exercise, journaling prompt, small self-care act, or reframe)
+- Keep it 2-3 sentences, warm and conversational
+- Don't be preachy or generic - make it feel personal to what they shared
+- If they're struggling, validate that it's okay to feel this way
+
+Examples of good suggestions:
+- "Hey ${name}, it sounds like that comment really stung. When self-doubt creeps in, try writing down 3 things you've accomplished this week - sometimes we need a reminder of our own strength."
+- "${name}, dealing with that much stress is exhausting. Would you try a 5-minute walk outside? Fresh air can help reset your mind when everything feels heavy."`;
+        max_tokens = 300;
         break;
       }
 

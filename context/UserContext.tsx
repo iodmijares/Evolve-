@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import { useNutrition } from './NutritionContext';
 import { useFitness } from './FitnessContext';
 import { useWellness } from './WellnessContext';
+import { useJournal } from './JournalContext';
 import { useCommunity } from './CommunityContext';
 
 interface UserContextType {
@@ -56,6 +57,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     const nutrition = useNutrition();
     const fitness = useFitness();
     const wellness = useWellness();
+    const journal = useJournal();
     const community = useCommunity();
 
     const value: UserContextType = {
@@ -89,7 +91,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         // Wellness
         weightHistory: wellness.weightHistory,
         dailyLogs: wellness.dailyLogs,
-        journalEntries: wellness.journalEntries,
+        journalEntries: journal.journalEntries,
         cycleInsight: wellness.cycleInsight,
         setCycleInsight: wellness.setCycleInsight,
         cyclePatternInsight: wellness.cyclePatternInsight,
@@ -97,7 +99,7 @@ export const UserProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         isCyclePatternInsightLoading: wellness.isCyclePatternInsightLoading,
         logWeight: wellness.logWeight,
         logDailyEntry: wellness.logDailyEntry,
-        logJournalEntry: wellness.logJournalEntry,
+        logJournalEntry: journal.logJournalEntry,
 
         // Community
         achievements: community.achievements,

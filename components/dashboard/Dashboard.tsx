@@ -15,7 +15,7 @@ import { AddMealChoiceModal } from './AddMealChoiceModal';
 import { LogMealModal } from '../nutrition/LogMealModal';
 import { getHumanReadableError } from '../../utils/errorHandler';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography, spacing, breakpoints } from '../../styles/theme';
+import { colors, typography, spacing } from '../../styles/theme';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -30,9 +30,8 @@ const Dashboard: React.FC = () => {
         cycleInsight, setCycleInsight,
     } = useUser();
     const { theme } = useTheme();
-    const [isDesktop, setIsDesktop] = useState(window.innerWidth > breakpoints.lg);
     const isDark = theme === 'dark';
-    const styles = getStyles(isDark, isDesktop);
+    const styles = getStyles(isDark);
 
     const [isScannerOpen, setScannerOpen] = useState(false);
     const [isLogModalOpen, setLogModalOpen] = useState(false);
@@ -50,12 +49,6 @@ const Dashboard: React.FC = () => {
     const todayLog = useMemo(() => {
         return dailyLogs.find(log => log.date === today);
     }, [dailyLogs, today]);
-    
-    useEffect(() => {
-        const handleResize = () => setIsDesktop(window.innerWidth > breakpoints.lg);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         let phase: MenstrualPhase | undefined = undefined;
@@ -91,20 +84,20 @@ const Dashboard: React.FC = () => {
     }, [user, dailyLogs, currentPhase, cycleInsight, setCycleInsight]);
 
     if (!user) {
-        return <div style={styles.container}><p style={styles.greeting}>Loading user data...</p></div>;
+        return <div className="container center-content"><p style={styles.greeting}>Loading user data...</p></div>;
     }
 
     return (
         <div style={{ flex: 1, position: 'relative', height: '100%' }}>
-            <div style={styles.container}>
+            <div className="container">
                 <div style={styles.header}>
                     <h1 style={styles.greeting}>{getGreeting()}, {user.username || user.name}</h1>
                     <p style={styles.subtitle}>Ready to make today count?</p>
                 </div>
 
-                <div style={styles.desktopGrid}>
+                <div className="dashboard-grid">
                     {user.gender === 'female' && (
-                        <div style={styles.leftColumn}>
+                        <div className="dashboard-column">
                             {cycleInsight && (
                                 <CycleFocusCard insight={cycleInsight} />
                             )}
@@ -126,7 +119,7 @@ const Dashboard: React.FC = () => {
                             </button>
                         </div>
                     )}
-                    <div style={user.gender === 'female' ? styles.rightColumn : styles.fullWidthColumn}>
+                    <div className="dashboard-column" style={{ width: '100%' }}>
                         <div style={styles.card}>
                             <p style={styles.cardTitle}>At a Glance</p>
                             <div style={styles.caloriesContainer}>
@@ -170,39 +163,9 @@ const Dashboard: React.FC = () => {
     );
 };
 
-const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.CSSProperties } => ({
-    container: {
-        height: '100%',
-        backgroundColor: isDark ? colors.dark : colors.base,
-        padding: isDesktop ? spacing.lg : spacing.lg,
-        paddingBottom: isDesktop ? spacing.lg : '120px',
-        overflowY: 'auto',
-    },
-    desktopGrid: {
-        display: isDesktop ? 'flex' : 'block',
-        flexDirection: 'row',
-        gap: isDesktop ? spacing.lg : spacing.md,
-    },
-    leftColumn: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.lg,
-    },
-    rightColumn: {
-        flex: 1.2, // Make meal list slightly wider
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.lg,
-    },
-    fullWidthColumn: {
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.lg,
-    },
+const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => ({
     header: {
-        marginBottom: isDesktop ? spacing.lg : spacing.xl,
+        marginBottom: spacing.lg,
     },
     greeting: {
         ...typography.h1,
@@ -280,8 +243,8 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     fab: {
         position: 'absolute',
-        bottom: isDesktop ? 24 : 80,
-        right: isDesktop ? 24 : 16,
+        bottom: 24,
+        right: 24,
         backgroundColor: colors.primary,
         width: 60,
         height: 60,
@@ -292,6 +255,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
         border: 'none',
         cursor: 'pointer',
+        zIndex: 100,
     },
 });
 

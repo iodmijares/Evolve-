@@ -1,6 +1,6 @@
 
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useUser } from '../../context/UserContext';
 import ProgressChart from './ProgressChart';
 import { Icon } from '../shared/Icon';
@@ -16,7 +16,7 @@ import { CyclePatternInsightCard } from './CyclePatternInsightCard';
 import DailyLogModal from '../dashboard/DailyLogModal';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
-import { colors, typography, spacing, breakpoints } from '../../styles/theme';
+import { colors, typography, spacing } from '../../styles/theme';
 import { generateSymptomSuggestions } from '../../services/groqService';
 
 const WorkoutHistoryList: React.FC<{ workouts: Workout[] }> = ({ workouts }) => {
@@ -60,9 +60,8 @@ const Profile: React.FC = () => {
         logout
     } = userData;
     const { theme } = useTheme();
-    const [isDesktop, setIsDesktop] = useState(window.innerWidth > breakpoints.lg);
     const isDark = theme === 'dark';
-    const styles = getStyles(isDark, isDesktop);
+    const styles = getStyles(isDark);
 
     const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -153,12 +152,6 @@ const Profile: React.FC = () => {
             alert(`Failed to upload profile picture: ${error.message}`);
         }
     };
-    
-     useEffect(() => {
-        const handleResize = () => setIsDesktop(window.innerWidth > breakpoints.lg);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const phaseData = useMemo(() => {
         if (user && user.gender === 'female' && user.lastPeriodStartDate && user.cycleLength) {
@@ -204,7 +197,7 @@ const Profile: React.FC = () => {
 
     return (
         <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
-            <div style={styles.container}>
+            <div className="container">
                 <div style={styles.header}>
                     <div style={styles.profileInfo}>
                         <button onClick={handlePictureUpload} style={styles.avatarContainer}>
@@ -228,8 +221,8 @@ const Profile: React.FC = () => {
                     </button>
                 </div>
 
-                <div style={styles.desktopGrid}>
-                    <div style={styles.leftColumn}>
+                <div className="dashboard-grid">
+                    <div className="dashboard-column">
                         <Card title="Progress & Stats" icon="badge">
                             <div style={styles.statsGrid}>
                                 <StatCard icon="target" iconColor={colors.accent} title="Current Weight">
@@ -278,7 +271,7 @@ const Profile: React.FC = () => {
                         )}
                     </div>
 
-                    <div style={styles.rightColumn}>
+                    <div className="dashboard-column">
                         <Card title="Workout History" icon="workout">
                             <WorkoutHistoryList workouts={workoutHistory} />
                         </Card>
@@ -322,22 +315,7 @@ const Profile: React.FC = () => {
 };
 
 // Styles
-const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.CSSProperties } => ({
-    container: {
-        flex: 1,
-        background: isDark 
-            ? 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
-            : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-        padding: isDesktop ? '32px' : '20px',
-        overflowY: 'auto'
-    },
-    desktopGrid: {
-        display: isDesktop ? 'flex' : 'block',
-        flexDirection: 'row',
-        gap: '24px',
-    },
-    leftColumn: { flex: 2, display: 'flex', flexDirection: 'column', gap: '20px' },
-    rightColumn: { flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' },
+const getStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => ({
     header: {
         display: 'flex',
         flexDirection: 'row',
@@ -348,7 +326,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
             ? 'rgba(31, 41, 55, 0.6)'
             : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(10px)',
-        padding: isDesktop ? '24px' : '16px',
+        padding: '24px', // Default padding, could be responsive but CSS handles container
         borderRadius: '16px',
         boxShadow: isDark
             ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
@@ -358,7 +336,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: isDesktop ? '16px' : '12px',
+        gap: '16px',
     },
     avatarContainer: {
         position: 'relative',
@@ -369,8 +347,8 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         transition: 'transform 0.2s ease',
     },
     avatar: {
-        width: isDesktop ? '90px' : '70px',
-        height: isDesktop ? '90px' : '70px',
+        width: '90px',
+        height: '90px',
         borderRadius: '50%',
         border: `4px solid ${isDark ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
@@ -389,7 +367,7 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
         justifyContent: 'center',
     },
     name: {
-        fontSize: isDesktop ? '28px' : '22px',
+        fontSize: '28px',
         fontWeight: 800 as React.CSSProperties['fontWeight'],
         color: isDark ? colors.light : colors.dark,
         margin: 0,
@@ -439,9 +417,10 @@ const getStyles = (isDark: boolean, isDesktop: boolean): { [key: string]: React.
     },
     cycleGrid: {
         display: 'flex',
-        flexDirection: isDesktop ? 'row' : 'column',
+        flexDirection: 'row', // We keep this row for now, but could be responsive with CSS if needed
         alignItems: 'center',
-        gap: spacing.md
+        gap: spacing.md,
+        flexWrap: 'wrap' // Allow wrapping on mobile
     },
     cycleWheelContainer: {
         display: 'flex',

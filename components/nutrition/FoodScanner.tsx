@@ -47,10 +47,18 @@ const FoodScanner: React.FC<FoodScannerProps> = ({ isOpen, onClose }) => {
         setResult(null);
         setError(null);
         try {
-            const base64Image = (await fileToBase64(selectedFile)).split(',')[1];
-            const analysisResult = await analyzeNutritionLabel({ uri: base64Image, type: selectedFile.type }, user, macros);
+            const base64Full = await fileToBase64(selectedFile);
+            const base64Image = base64Full.split(',')[1];
+            
+            if (!base64Image) {
+                throw new Error("Failed to process image. Please try again.");
+            }
+
+            // fileToBase64 converts to jpeg, so we must specify that type
+            const analysisResult = await analyzeNutritionLabel({ uri: base64Image, type: 'image/jpeg' }, user, macros);
             setResult(analysisResult);
         } catch (err) {
+            console.error("Analysis error:", err);
             setError(getHumanReadableError(err));
         } finally {
             setIsLoading(false);
@@ -63,10 +71,18 @@ const FoodScanner: React.FC<FoodScannerProps> = ({ isOpen, onClose }) => {
         setGeneratedRecipe(null);
         setError(null);
         try {
-            const base64Image = (await fileToBase64(selectedFile)).split(',')[1];
-            const recipeResult = await generateRecipeFromImage({ uri: base64Image, type: selectedFile.type }, user);
+            const base64Full = await fileToBase64(selectedFile);
+            const base64Image = base64Full.split(',')[1];
+
+            if (!base64Image) {
+                throw new Error("Failed to process image. Please try again.");
+            }
+
+            // fileToBase64 converts to jpeg, so we must specify that type
+            const recipeResult = await generateRecipeFromImage({ uri: base64Image, type: 'image/jpeg' }, user);
             setGeneratedRecipe(recipeResult);
         } catch (err) {
+             console.error("Recipe generation error:", err);
             setError(getHumanReadableError(err));
         } finally {
             setIsLoading(false);
@@ -171,8 +187,82 @@ const FoodScanner: React.FC<FoodScannerProps> = ({ isOpen, onClose }) => {
         }
         
         if (generatedRecipe) {
+            // Check if the food is not suitable for the user
+            if (!generatedRecipe.isSuitable) {
+                return (
+                    <div style={styles.resultContainer}>
+                        <div style={{
+                            backgroundColor: isDark ? colors.red[900] : colors.red[100],
+                            padding: spacing.lg,
+                            borderRadius: 12,
+                            textAlign: 'center',
+                            marginBottom: spacing.md
+                        }}>
+                            <Icon name="close" size={48} color={colors.red[400]} />
+                            <h3 style={{
+                                ...typography.h2,
+                                color: colors.red[600],
+                                marginTop: spacing.sm,
+                                marginBottom: spacing.sm
+                            }}>
+                                Not Recommended for You
+                            </h3>
+                            <p style={{
+                                ...typography.body,
+                                color: isDark ? colors.light : colors.dark,
+                                marginBottom: spacing.md
+                            }}>
+                                {generatedRecipe.unsuitableReason || `This food doesn't align well with your ${user?.goal} goal.`}
+                            </p>
+                        </div>
+
+                        {generatedRecipe.name && (
+                            <div style={{
+                                backgroundColor: isDark ? colors.gray[700] : colors.gray[100],
+                                padding: spacing.md,
+                                borderRadius: 8,
+                                marginBottom: spacing.md
+                            }}>
+                                <h4 style={{...typography.h3, color: isDark ? colors.light : colors.dark, marginBottom: spacing.xs}}>
+                                    Detected: {generatedRecipe.name}
+                                </h4>
+                                <p style={{...typography.body, color: colors.muted, marginBottom: spacing.sm}}>
+                                    {generatedRecipe.description}
+                                </p>
+                                {generatedRecipe.macros && (
+                                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.xs, color: isDark ? colors.light : colors.dark, fontSize: typography.subtle.fontSize}}>
+                                        <div>~{generatedRecipe.macros.calories} cal</div>
+                                        <div>~{generatedRecipe.macros.protein}g protein</div>
+                                        <div>~{generatedRecipe.macros.carbs}g carbs</div>
+                                        <div>~{generatedRecipe.macros.fat}g fat</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <p style={{...typography.subtle, color: colors.muted, textAlign: 'center', marginBottom: spacing.md}}>
+                            Try scanning healthier ingredients that align with your {user?.goal} goal!
+                        </p>
+
+                        <button onClick={handleCancelScan} className="btn" style={{width: '100%'}}>
+                            Try Another Image
+                        </button>
+                    </div>
+                );
+            }
+
+            // Food is suitable - show the recipe
             return (
                  <div style={styles.resultContainer}>
+                    <div style={{
+                        backgroundColor: isDark ? colors.emerald[900] : colors.emerald[100],
+                        padding: spacing.sm,
+                        borderRadius: 8,
+                        textAlign: 'center',
+                        marginBottom: spacing.md
+                    }}>
+                        <span style={{color: colors.emerald[600], fontWeight: 600}}>✓ Great choice for your {user?.goal} goal!</span>
+                    </div>
                     <h3 className="h2" style={{textAlign: 'center'}}>{generatedRecipe.name}</h3>
                     <p style={getTextStyles(isDark)}>{generatedRecipe.description}</p>
                     

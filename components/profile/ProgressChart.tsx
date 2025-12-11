@@ -18,10 +18,16 @@ const ProgressChart: React.FC = () => {
     };
 
     const formattedData = useMemo(() => {
-        return weightHistory.map(entry => ({
-            name: entry.date,
-            weight: parseFloat(Number(entry.weight).toFixed(2)),
-        })).sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
+        return weightHistory
+            .map(entry => {
+                const val = Number(entry.weight);
+                return {
+                    name: entry.date,
+                    weight: isNaN(val) ? 0 : parseFloat(val.toFixed(2)),
+                };
+            })
+            .filter(item => item.weight > 0) // Filter out invalid or zero weights
+            .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
     }, [weightHistory]);
 
     const progressStats = useMemo(() => {
@@ -30,7 +36,7 @@ const ProgressChart: React.FC = () => {
         const firstWeight = formattedData[0].weight;
         const lastWeight = formattedData[formattedData.length - 1].weight;
         const change = lastWeight - firstWeight;
-        const changePercent = ((change / firstWeight) * 100).toFixed(1);
+        const changePercent = firstWeight !== 0 ? ((change / firstWeight) * 100).toFixed(1) : "0.0";
         
         const maxWeight = Math.max(...formattedData.map(d => d.weight));
         const minWeight = Math.min(...formattedData.map(d => d.weight));

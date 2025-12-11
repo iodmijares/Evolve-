@@ -18,38 +18,17 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ entry }) => {
     const isDark = theme === 'dark';
     const styles = getAIStyles(isDark);
 
-    if (!entry.summary) return null;
+    if (!entry.suggestion) return null;
 
     return (
         <div style={styles.container}>
             <h3 style={styles.title}>
                 <Icon name="lightbulb" size={18} color={colors.primary} />
-                <span> AI Reflection</span>
+                <span> A Gentle Suggestion</span>
             </h3>
             
-            <div>
-                <p style={styles.heading}>Summary</p>
-                <p style={styles.italicText}>"{entry.summary}"</p>
-            </div>
-
-            {entry.themes && entry.themes.length > 0 && (
-                <div>
-                    <p style={styles.heading}>Key Themes</p>
-                    <div style={styles.themesContainer}>
-                        {entry.themes.map((theme, index) => (
-                            <div key={index} style={styles.themeBadge}>
-                                <span style={styles.themeText}>{theme}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <div>
-                <p style={styles.heading}>A Gentle Suggestion</p>
-                <p style={styles.bodyText}>{entry.suggestion}</p>
-            </div>
-             <p style={styles.disclaimer}>This is an AI-generated reflection and not a substitute for professional advice.</p>
+            <p style={styles.bodyText}>{entry.suggestion}</p>
+            <p style={styles.disclaimer}>This is an AI-generated reflection and not a substitute for professional advice.</p>
         </div>
     );
 };

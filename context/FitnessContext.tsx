@@ -38,7 +38,7 @@ export const FitnessProvider: React.FC<React.PropsWithChildren<{}>> = ({ childre
                 `evolve_${user.id}_workout_history`,
                 30 * 60 * 1000,
                 async () => {
-                    const { data } = await supabase.from('workouts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+                    const { data } = await supabase.from('workouts').select('id, user_id, name, type, duration, description, date, video_url, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
                     return { data };
                 }
             );

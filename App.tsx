@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NutritionProvider } from './context/NutritionContext';
 import { FitnessProvider } from './context/FitnessContext';
 import { WellnessProvider } from './context/WellnessContext';
+import { JournalProvider } from './context/JournalContext';
 import { CommunityProvider } from './context/CommunityContext';
 
 const AppContent: React.FC = () => {
@@ -55,13 +56,15 @@ const App: React.FC = () => {
                         <NutritionProvider>
                             <FitnessProvider>
                                 <WellnessProvider>
-                                    <CommunityProvider>
-                                        <UserProvider>
-                                            <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-                                                <AppContent />
-                                            </div>
-                                        </UserProvider>
-                                    </CommunityProvider>
+                                    <JournalProvider>
+                                        <CommunityProvider>
+                                            <UserProvider>
+                                                <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+                                                    <AppContent />
+                                                </div>
+                                            </UserProvider>
+                                        </CommunityProvider>
+                                    </JournalProvider>
                                 </WellnessProvider>
                             </FitnessProvider>
                         </NutritionProvider>

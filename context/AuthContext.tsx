@@ -70,43 +70,68 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
 
         const loadUserData = async (currentSession: Session) => {
             if (!currentSession) return;
-            const userId = currentSession.user.id;
-            const profileCacheKey = `evolve_${userId}_profile`;
+            
+            try {
+                const userId = currentSession.user.id;
+                const profileCacheKey = `evolve_${userId}_profile`;
 
-            let userProfile: UserProfile | null = await cachingService.get<UserProfile>(profileCacheKey, 5 * 60 * 1000);
-
-            if (!userProfile) {
-                const { data: profileData, error } = await supabase
-                    .from('profiles').select('*').eq('id', userId).single();
-
-                if (error || !profileData) {
-                    // New user or error, partial profile
-                    setUser({ id: userId, email: currentSession.user.email! } as UserProfile);
-                    setIsOnboardingComplete(false);
-                    setIsLoading(false);
-                    return;
+                let userProfile: UserProfile | null = null;
+                
+                try {
+                    userProfile = await cachingService.get<UserProfile>(profileCacheKey, 5 * 60 * 1000);
+                } catch (cacheError) {
+                    logger.warn('Error reading from cache', { context: 'AuthContext', data: cacheError });
+                    // Continue without cache
                 }
 
-                userProfile = { ...fromDBShape(profileData), id: profileData.id, email: currentSession.user.email! } as UserProfile;
-                await cachingService.set(profileCacheKey, userProfile);
-            }
+                if (!userProfile) {
+                    const { data: profileData, error } = await supabase
+                        .from('profiles').select('id, name, username, age, gender, height, weight, activity_level, goal, dietary_preferences, nationality, last_period_start_date, cycle_length, onboarding_date, profile_picture_url, has_seen_walkthrough').eq('id', userId).single();
 
-            setUser(userProfile);
-            setIsOnboardingComplete(!!userProfile?.onboardingDate);
-            setIsLoading(false);
+                    if (error || !profileData) {
+                        // New user or error, partial profile
+                        setUser({ id: userId, email: currentSession.user.email! } as UserProfile);
+                        setIsOnboardingComplete(false);
+                        return;
+                    }
+
+                    userProfile = { ...fromDBShape(profileData), id: profileData.id, email: currentSession.user.email! } as UserProfile;
+                    
+                    try {
+                        await cachingService.set(profileCacheKey, userProfile);
+                    } catch (cacheError) {
+                        logger.warn('Error writing to cache', { context: 'AuthContext', data: cacheError });
+                    }
+                }
+
+                setUser(userProfile);
+                setIsOnboardingComplete(!!userProfile?.onboardingDate);
+            } catch (error) {
+                logger.error('Error loading user data', error, { context: 'AuthContext' });
+                // Ensure we don't block the app completely on error, potentially set a fallback or error state if needed
+                // For now, we'll let the user be null or partial which might trigger other checks
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         initializeAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
             if (!mounted) return;
-            setSession(currentSession);
-            if (currentSession) {
-                setIsLoading(true);
-                await loadUserData(currentSession);
-            } else {
-                setUser(null);
-                setIsOnboardingComplete(false);
+            
+            try {
+                setSession(currentSession);
+                if (currentSession) {
+                    setIsLoading(true);
+                    await loadUserData(currentSession);
+                } else {
+                    setUser(null);
+                    setIsOnboardingComplete(false);
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                logger.error('Error handling auth state change', error, { context: 'AuthContext' });
                 setIsLoading(false);
             }
         });

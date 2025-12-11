@@ -1,12 +1,19 @@
 
 // FIX: AuthError type import removed to avoid module resolution errors. Duck-typing will be used instead.
 
+// Placeholder for remote logging (e.g., Sentry, LogRocket)
+const logErrorToService = (_error: unknown, _context?: Record<string, any>) => {
+    // In a real app, this would send the error to a service
+    // e.g., Sentry.captureException(_error, { extra: _context });
+};
+
 /**
  * Translates various error types into human-readable, user-friendly messages.
  */
 export const getHumanReadableError = (error: unknown): string => {
     // Log the actual error for debugging purposes
     console.error("An error was handled:", error);
+    logErrorToService(error);
 
     if (error instanceof Error) {
         // FIX: Use duck-typing to check for AuthError shape instead of `instanceof`, which is more robust.

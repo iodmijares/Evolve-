@@ -12,12 +12,12 @@
     --border: #e2e8f0;
     
     /* Standardized Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-    --radius-2xl: 24px;
-    --radius-full: 999px;
+    --radius-sm: 0.5rem;   /* 8px */
+    --radius-md: 0.75rem;  /* 12px */
+    --radius-lg: 1rem;     /* 16px */
+    --radius-xl: 1.25rem;  /* 20px */
+    --radius-2xl: 1.5rem;  /* 24px */
+    --radius-full: 9999px;
 
     --color-text-base: var(--dark);
     --color-text-muted: var(--muted);
@@ -68,11 +68,11 @@
     --gray-800: #1f2937;
     --gray-900: #111827;
 
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
+    --spacing-xs: 0.25rem; /* 4px */
+    --spacing-sm: 0.5rem;  /* 8px */
+    --spacing-md: 1rem;    /* 16px */
+    --spacing-lg: 1.5rem;  /* 24px */
+    --spacing-xl: 2rem;    /* 32px */
 
     --breakpoint-md: 768px;
     --breakpoint-lg: 1024px;
@@ -104,11 +104,11 @@ body {
 }
 
 /* Typography */
-.h1 { font-size: 24px; font-weight: bold; }
-.h2 { font-size: 20px; font-weight: bold; }
-.h3 { font-size: 18px; font-weight: 600; }
-.body { font-size: 16px; }
-.subtle { font-size: 14px; color: var(--color-text-muted); }
+.h1 { font-size: 1.5rem; font-weight: bold; }    /* 24px */
+.h2 { font-size: 1.25rem; font-weight: bold; }   /* 20px */
+.h3 { font-size: 1.125rem; font-weight: 600; }   /* 18px */
+.body { font-size: 1rem; }                       /* 16px */
+.subtle { font-size: 0.875rem; color: var(--color-text-muted); } /* 14px */
 
 /* Layout & General Classes */
 .center-content {
@@ -124,19 +124,28 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-html.dark .layout {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: var(--color-bg-base);
 }
 
 .layout > .content {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 76px; /* Space for bottom bar + padding */
     scroll-behavior: smooth;
+    position: relative;
+}
+
+/* Dashboard Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
 }
 
 /* Spinner */
@@ -147,9 +156,9 @@ html.dark .layout {
   border-color: var(--primary);
   border-right-color: transparent !important;
 }
-.spinner-sm { width: 16px; height: 16px; border-width: 2px; }
-.spinner-md { width: 24px; height: 24px; border-width: 3px; }
-.spinner-lg { width: 36px; height: 36px; border-width: 4px; }
+.spinner-sm { width: 1rem; height: 1rem; border-width: 2px; }
+.spinner-md { width: 1.5rem; height: 1.5rem; border-width: 3px; }
+.spinner-lg { width: 2.25rem; height: 2.25rem; border-width: 4px; }
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -169,7 +178,7 @@ html.dark .layout {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(0.625rem);
   }
   to {
     opacity: 1;
@@ -180,7 +189,7 @@ html.dark .layout {
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-0.5rem);
   }
   to {
     opacity: 1;
@@ -191,13 +200,13 @@ html.dark .layout {
 /* Input Styles */
 .input {
     width: 100%;
-    padding: 16px 18px;
+    padding: 1rem 1.125rem;
     border: 1.5px solid transparent;
     background-color: var(--slate-50);
     color: var(--color-text-base);
     border-radius: var(--radius-lg);
-    font-size: 15px;
-    height: 56px;
+    font-size: 0.9375rem;
+    height: 3.5rem;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
     letter-spacing: -0.01em;
@@ -243,23 +252,23 @@ html.dark .input::placeholder {
 }
 
 .textarea {
-    height: 150px;
+    height: 9.375rem;
     resize: vertical;
-    padding-top: 12px;
+    padding-top: 0.75rem;
 }
 
 /* Button Styles */
 .btn {
     width: 100%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-focus) 100%);
-    padding: 17px 24px;
+    padding: 1rem 1.5rem;
     border-radius: var(--radius-lg);
     align-items: center;
     border: none;
     cursor: pointer;
     color: var(--light);
     font-weight: 700;
-    font-size: 16px;
+    font-size: 1rem;
     letter-spacing: -0.01em;
     display: flex;
     justify-content: center;
@@ -269,7 +278,7 @@ html.dark .input::placeholder {
     box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3), 0 1px 3px rgba(16, 185, 129, 0.2);
     position: relative;
     overflow: hidden;
-    height: 56px;
+    height: 3.5rem;
 }
 
 .btn::before {
@@ -311,7 +320,7 @@ html.dark .btn:disabled {
 
 /* Card Styles */
 .card {
-    background-color: var(--light);
+    background-color: var(--color-bg-light);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
@@ -320,8 +329,8 @@ html.dark .btn:disabled {
 }
 
 html.dark .card {
-    background-color: var(--gray-800);
-    border-color: var(--gray-700);
+    background-color: var(--color-bg-light);
+    border-color: var(--color-border);
 }
 
 @media (hover: hover) {
@@ -359,9 +368,9 @@ html.dark .card {
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 12px;
+    padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.01em;
 }
@@ -394,48 +403,40 @@ html.dark .badge-primary {
 @media (max-width: 360px) {
     /* iPhone SE and very small screens */
     .input, .btn {
-        height: 48px;
-        padding: 12px 16px;
-        font-size: 14px;
+        height: 3rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
     }
     
     .textarea {
-        padding: 10px 14px;
+        padding: 0.625rem 0.875rem;
     }
     
-    .layout > .content {
-        padding-bottom: 72px;
-    }
-    
-    .h1 { font-size: 22px; }
-    .h2 { font-size: 18px; }
-    .h3 { font-size: 16px; }
+    .h1 { font-size: 1.375rem; }
+    .h2 { font-size: 1.125rem; }
+    .h3 { font-size: 1rem; }
 }
 
 @media (min-width: 361px) and (max-width: 400px) {
     .input, .btn {
-        height: 50px;
-        padding: 14px 18px;
-        font-size: 14px;
+        height: 3.125rem;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.875rem;
     }
     
     .textarea {
-        padding: 10px 14px;
+        padding: 0.625rem 0.875rem;
     }
 }
 
 @media (min-width: 768px) {
-    .desktop-only { display: block; }
-    .mobile-only { display: none; }
-    
-    .layout {
-        flex-direction: row;
-    }
-    .layout > .content {
-        padding-bottom: 0;
-    }
-    
     .container {
         padding: var(--spacing-xl);
+    }
+}
+
+@media (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1.2fr;
     }
 }

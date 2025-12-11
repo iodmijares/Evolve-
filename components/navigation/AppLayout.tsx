@@ -1,7 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { BottomBar } from './BottomBar';
-import { Sidebar } from './Sidebar';
 import Dashboard from '../dashboard/Dashboard';
 import Journal from '../journal/Journal';
 import WorkoutPlan from '../workout_plan/WorkoutPlan';
@@ -9,26 +8,11 @@ import MealPlan from '../meal_plan/MealPlan';
 import CommunityHub from '../community/CommunityHub';
 import Profile from '../profile/Profile';
 import { Walkthrough } from '../shared/Walkthrough';
-import { useTheme } from '../../context/ThemeContext';
 
 export const AppLayout: React.FC = () => {
-    const { theme } = useTheme();
-    const isDark = theme === 'dark';
-
     return (
-        <div className="layout" style={{ 
-            display: 'flex', 
-            height: '100vh', 
-            overflow: 'hidden',
-            background: isDark ? '#111827' : '#f8fafc'
-        }}>
-            <Sidebar />
-            <main className="content" style={{ 
-                flex: 1, 
-                overflowY: 'auto', 
-                position: 'relative',
-                paddingBottom: '80px' // Space for BottomBar on mobile
-            }}>
+        <div className="layout">
+            <main className="content" role="main">
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/journal" element={<Journal />} />

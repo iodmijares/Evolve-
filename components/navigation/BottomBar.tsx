@@ -31,7 +31,7 @@ export const BottomBar: React.FC = () => {
     const dynamicStyles = getStyles(isDark);
 
     return (
-        <div style={dynamicStyles.container} className="mobile-only">
+        <div style={dynamicStyles.container}>
             {navItems.map(item => {
                 const isActive = location.pathname === item.path;
                 const iconColor = isActive ? colors.primary : (isDark ? colors.gray[400] : colors.slate[500]);
@@ -84,10 +84,7 @@ const getStyles = (isDark: boolean): {[key: string]: React.CSSProperties} => ({
         borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
         justifyContent: 'space-around',
         alignItems: 'center',
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        width: '100%',
         zIndex: 100,
         boxShadow: isDark
             ? '0 -8px 32px rgba(0, 0, 0, 0.6), 0 -2px 12px rgba(16, 185, 129, 0.05)'

@@ -105,6 +105,8 @@ export interface GeneratedRecipe {
     ingredients: string[];
     instructions: string[];
     macros: Macros;
+    isSuitable: boolean;
+    unsuitableReason?: string;
 }
 
 export interface Achievement {
