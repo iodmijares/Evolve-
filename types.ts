@@ -25,6 +25,16 @@ export interface Meal {
     rationale?: string;
 }
 
+export interface Exercise {
+    name: string;
+    sets: number;
+    reps: string; // Can be "12" or "12-15" or "30 seconds"
+    restSeconds?: number; // Rest between sets
+    instructions?: string[]; // Step-by-step instructions
+    tips?: string; // Form tips or notes
+    targetMuscles?: string[]; // Muscles worked
+}
+
 export interface Workout {
     id?: string;
     userId?: string;
@@ -32,6 +42,9 @@ export interface Workout {
     type: string;
     duration: number; // in minutes
     description: string;
+    exercises?: Exercise[]; // Detailed exercises
+    warmup?: string; // Warmup instructions
+    cooldown?: string; // Cooldown instructions
     date?: string; // YYYY-MM-DD or ISO timestamp
     videoUrl?: string;
 }

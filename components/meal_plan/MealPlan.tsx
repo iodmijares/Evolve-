@@ -26,6 +26,15 @@ const MealPlan: React.FC = () => {
             setError(getHumanReadableError(err));
         }
     };
+
+    const handleRegeneratePlan = async () => {
+        setError(null);
+        try {
+            await generateAndSetWeeklyMealPlan(true); // Force regenerate
+        } catch (err) {
+            setError(getHumanReadableError(err));
+        }
+    };
     
     const goToPreviousDay = () => setSelectedDayIndex((prev) => (prev - 1 + 7) % 7);
     const goToNextDay = () => setSelectedDayIndex((prev) => (prev + 1) % 7);
@@ -78,6 +87,25 @@ const MealPlan: React.FC = () => {
                         <Icon name="lightbulb" size={20} color={colors.light} />
                         <span style={styles.generateButtonText}>Generate My Plan</span>
                     </button>
+                </div>
+            );
+        }
+
+        // Check if plan is malformed (less than 7 days or missing meal data)
+        const isMalformed = weeklyMealPlan.length < 7 || 
+            weeklyMealPlan.some(day => !day.breakfast?.name || !day.lunch?.name || !day.dinner?.name);
+        
+        if (isMalformed) {
+            return (
+                <div style={styles.stateContainer}>
+                    <Icon name="refresh" size={48} color={colors.amber[500]} />
+                    <h3 style={styles.stateTitle}>Plan Needs Refresh</h3>
+                    <p style={styles.stateSubtitle}>Your meal plan appears to be incomplete. Let's generate a fresh 7-day plan!</p>
+                    <button onClick={handleRegeneratePlan} style={styles.generateButton} disabled={isMealPlanLoading}>
+                        {isMealPlanLoading ? <Spinner size="sm" /> : <Icon name="refresh" size={20} color={colors.light} />}
+                        <span style={styles.generateButtonText}>{isMealPlanLoading ? 'Regenerating Plan...' : 'Regenerate Plan'}</span>
+                    </button>
+                    {error && <p style={styles.errorText}>{error}</p>}
                 </div>
             );
         }

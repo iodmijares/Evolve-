@@ -173,27 +173,81 @@ Examples of good suggestions:
 
         case 'generateMonthlyWorkoutPlan': {
             const { user } = payload;
-            prompt = `Create a 4-week workout plan for someone with these details:
+            prompt = `Create a detailed 30-day workout plan for someone with these details:
 - Goal: ${user.goal}
 - Activity Level: ${user.activityLevel}
 - Weight: ${user.weight}kg, Height: ${user.height}cm
+- Gender: ${user.gender}
 
-Return ONLY valid JSON with this exact structure:
-{
-    "plan": [
-        {
-            "week": 1,
-            "days": [
-                { "day": "Monday", "focus": "Upper Body", "exercises": [{ "name": "Push-ups", "sets": 3, "reps": "10-12", "notes": "Optional tip" }], "duration": "30 min", "intensity": "moderate" },
-                ...
+Return ONLY valid JSON - an array of exactly 30 day objects. Each workout must include DETAILED exercises with step-by-step instructions.
+
+Structure:
+[
+    {
+        "day": 1,
+        "type": "workout",
+        "workout": {
+            "name": "Upper Body Strength",
+            "type": "strength",
+            "duration": 45,
+            "description": "Build upper body strength focusing on chest, shoulders, and arms",
+            "warmup": "5 min light cardio (jumping jacks, arm circles, shoulder rolls)",
+            "cooldown": "5 min stretching (chest stretch, shoulder stretch, tricep stretch)",
+            "exercises": [
+                {
+                    "name": "Push-ups",
+                    "sets": 3,
+                    "reps": "12-15",
+                    "restSeconds": 60,
+                    "targetMuscles": ["chest", "triceps", "shoulders"],
+                    "instructions": [
+                        "Start in a high plank position with hands slightly wider than shoulder-width",
+                        "Keep your body in a straight line from head to heels",
+                        "Lower your chest toward the floor by bending your elbows",
+                        "Push back up to the starting position",
+                        "Keep core engaged throughout the movement"
+                    ],
+                    "tips": "If too difficult, start with knee push-ups. Keep elbows at 45-degree angle."
+                },
+                {
+                    "name": "Dumbbell Shoulder Press",
+                    "sets": 3,
+                    "reps": "10-12",
+                    "restSeconds": 60,
+                    "targetMuscles": ["shoulders", "triceps"],
+                    "instructions": [
+                        "Sit or stand with dumbbells at shoulder height",
+                        "Press weights overhead until arms are fully extended",
+                        "Lower back to starting position with control"
+                    ],
+                    "tips": "Don't arch your back. Use lighter weight if needed."
+                }
             ]
-        },
-        ...
-    ]
-}
+        }
+    },
+    { "day": 2, "type": "rest", "workout": null },
+    ... continue for all 30 days
+]
 
-Include 5-6 workout days per week with rest days. Match intensity to the user's activity level.`;
-            max_tokens = 4000;
+RULES:
+- Include exactly 30 days (day 1 to day 30)
+- Mix workout and rest days (typically 4-5 workouts per week, 2-3 rest days)
+- Each workout day must have type: "workout" and a detailed workout object
+- Each rest day must have type: "rest" and workout: null
+- workout.name should be descriptive (e.g., "Upper Body Strength", "HIIT Cardio", "Core & Flexibility")
+- workout.type should be: "strength", "cardio", "hiit", "flexibility", or "mixed"
+- workout.duration in minutes (30-60)
+- workout.warmup and workout.cooldown should have specific instructions
+- Each workout must have 5-8 detailed exercises
+- Each exercise MUST include: name, sets, reps, restSeconds, targetMuscles (array), instructions (array of steps), and tips
+- Instructions should be clear step-by-step guidance (3-5 steps per exercise)
+- Tips should help with form or offer modifications
+- Match intensity to activity level: ${user.activityLevel}
+- Align with goal: ${user.goal}
+- For weight_loss: more cardio/HIIT, higher reps
+- For muscle_gain: more strength training, progressive overload
+- For maintenance: balanced mix of all types`;
+            max_tokens = 16000;
             break;
         }
 
@@ -202,26 +256,55 @@ Include 5-6 workout days per week with rest days. Match intensity to the user's 
             prompt = `Create a 7-day meal plan for:
 - Goal: ${user.goal}
 - Daily targets: ${macros.target.calories} cal, ${macros.target.protein}g protein, ${macros.target.carbs}g carbs, ${macros.target.fat}g fat
-${phase ? `- Menstrual phase: ${phase}` : ''}
+- Dietary preferences: ${user.dietaryPreferences?.length ? user.dietaryPreferences.join(', ') : 'None'}
+${phase ? `- Menstrual phase: ${phase} (adjust foods accordingly)` : ''}
 
-Return ONLY valid JSON:
-{
-    "plan": [
-        {
-            "day": "Monday",
-            "meals": [
-                { "type": "breakfast", "name": "Meal Name", "calories": 400, "protein": 25, "carbs": 40, "fat": 15, "ingredients": ["item1", "item2"], "instructions": "Brief prep steps" },
-                { "type": "lunch", ... },
-                { "type": "dinner", ... },
-                { "type": "snack", ... }
-            ]
+Return ONLY valid JSON - an array of exactly 7 day objects:
+[
+    {
+        "dayOfWeek": "Monday",
+        "breakfast": {
+            "name": "Protein Oatmeal Bowl",
+            "time": "7:00 AM",
+            "macros": { "calories": 400, "protein": 25, "carbs": 45, "fat": 12 },
+            "ingredients": ["1 cup oats", "1 scoop protein powder", "1 banana", "1 tbsp almond butter"],
+            "instructions": ["Cook oats with water", "Stir in protein powder", "Top with banana and almond butter"]
         },
-        ...
-    ]
-}
+        "lunch": {
+            "name": "Grilled Chicken Salad",
+            "time": "12:30 PM",
+            "macros": { "calories": 500, "protein": 40, "carbs": 30, "fat": 20 },
+            "ingredients": ["6oz chicken breast", "mixed greens", "cherry tomatoes", "cucumber", "olive oil dressing"],
+            "instructions": ["Grill chicken", "Combine vegetables", "Top with chicken and drizzle dressing"]
+        },
+        "dinner": {
+            "name": "Salmon with Vegetables",
+            "time": "7:00 PM",
+            "macros": { "calories": 550, "protein": 35, "carbs": 40, "fat": 25 },
+            "ingredients": ["6oz salmon fillet", "broccoli", "sweet potato", "olive oil"],
+            "instructions": ["Bake salmon at 400F for 15 min", "Roast vegetables", "Serve together"]
+        },
+        "snack": {
+            "name": "Greek Yogurt with Berries",
+            "time": "3:30 PM",
+            "macros": { "calories": 200, "protein": 15, "carbs": 20, "fat": 8 },
+            "ingredients": ["1 cup Greek yogurt", "1/2 cup mixed berries", "honey"],
+            "instructions": ["Mix yogurt with berries", "Drizzle honey on top"]
+        },
+        "dailyTotals": { "calories": 1650, "protein": 115, "carbs": 135, "fat": 65 }
+    },
+    ... continue for Tuesday through Sunday
+]
 
-Make meals practical, balanced, and aligned with the goal.`;
-            max_tokens = 4000;
+RULES:
+- Include all 7 days: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+- Each day MUST have: dayOfWeek, breakfast, lunch, dinner, snack, dailyTotals
+- Each meal MUST have: name, time, macros (calories, protein, carbs, fat), ingredients array, instructions array
+- dailyTotals should sum up all meals for that day
+- Target approximately ${macros.target.calories} calories per day
+- Make meals practical, varied, and delicious
+- Align with goal: ${user.goal}`;
+            max_tokens = 8000;
             break;
         }
 
@@ -285,13 +368,22 @@ const callGroqDirectly = async <T>(action: string, payload: any): Promise<T> => 
     const content = completion.choices[0]?.message?.content || '';
     if (!content) throw new Error('AI response was empty');
 
-    const parsedData = parseJsonResponse(content, action);
+    let parsedData = parseJsonResponse(content, action);
     
     // Handle wrapped responses for workout/meal plans
     if (action === 'generateMonthlyWorkoutPlan' || action === 'generateWeeklyMealPlan') {
-        if ('plan' in parsedData) {
-            return parsedData.plan as T;
+        if (parsedData && 'plan' in parsedData) {
+            parsedData = parsedData.plan;
         }
+    }
+    
+    // Transform workout plan to add isCompleted field
+    if (action === 'generateMonthlyWorkoutPlan' && Array.isArray(parsedData)) {
+        parsedData = parsedData.map((day: any) => ({
+            ...day,
+            isCompleted: false,
+            workout: day.workout || null
+        }));
     }
     
     return parsedData as T;
@@ -421,14 +513,24 @@ export const generateMonthlyWorkoutPlan = async (user: UserProfile): Promise<Wor
     return deduplicate(dedupeKey, async () => {
         try {
             console.log('🏋️ Generating workout plan for user:', user.name);
-            const plan = await invokeAiService<{ plan: WorkoutPlan } | WorkoutPlan>('generateMonthlyWorkoutPlan', { user });
-            // Handle case where AI returns wrapped object or direct object (function normalized it to parsed JSON, but let's be safe)
-            // The server returns exactly what prompt asked for. 
-            // For workout plan, the prompt asks for { "plan": [...] }
-            if ('plan' in plan) {
-                return plan.plan as WorkoutPlan;
+            let plan = await invokeAiService<any>('generateMonthlyWorkoutPlan', { user });
+            
+            // Handle case where AI returns wrapped object
+            if (plan && 'plan' in plan) {
+                plan = plan.plan;
             }
-            return plan as WorkoutPlan;
+            
+            // Ensure it's an array and transform each day
+            if (Array.isArray(plan)) {
+                return plan.map((day: any) => ({
+                    day: day.day,
+                    type: day.type || (day.workout ? 'workout' : 'rest'),
+                    workout: day.workout || null,
+                    isCompleted: day.isCompleted || false
+                })) as WorkoutPlan;
+            }
+            
+            throw new Error('Invalid workout plan format received');
         } catch (error: any) {
             console.error('❌ Error generating workout plan:', error);
             throw error;
@@ -442,11 +544,26 @@ export const generateWeeklyMealPlan = async (user: UserProfile, macros: DailyMac
     return deduplicate(dedupeKey, async () => {
         try {
             console.log('🍽️ Generating meal plan for user:', user.name, 'Phase:', phase);
-            const plan = await invokeAiService<{ plan: WeeklyMealPlan } | WeeklyMealPlan>('generateWeeklyMealPlan', { user, macros, phase });
-             if ('plan' in plan) {
-                return plan.plan as WeeklyMealPlan;
+            let plan = await invokeAiService<any>('generateWeeklyMealPlan', { user, macros, phase });
+            
+            // Handle case where AI returns wrapped object
+            if (plan && 'plan' in plan) {
+                plan = plan.plan;
             }
-            return plan as WeeklyMealPlan;
+            
+            // Ensure it's an array with proper structure
+            if (Array.isArray(plan)) {
+                return plan.map((day: any) => ({
+                    dayOfWeek: day.dayOfWeek || day.day || 'Unknown',
+                    breakfast: day.breakfast || { name: 'Not specified', time: '8:00 AM', macros: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [], instructions: [] },
+                    lunch: day.lunch || { name: 'Not specified', time: '12:00 PM', macros: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [], instructions: [] },
+                    dinner: day.dinner || { name: 'Not specified', time: '7:00 PM', macros: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [], instructions: [] },
+                    snack: day.snack || undefined,
+                    dailyTotals: day.dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 }
+                })) as WeeklyMealPlan;
+            }
+            
+            throw new Error('Invalid meal plan format received');
         } catch (error: any) {
             console.error('❌ Error generating meal plan:', error);
             throw error;

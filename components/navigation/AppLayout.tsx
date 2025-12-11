@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { BottomBar } from './BottomBar';
+import { Sidebar } from './Sidebar';
 import Dashboard from '../dashboard/Dashboard';
 import Journal from '../journal/Journal';
 import WorkoutPlan from '../workout_plan/WorkoutPlan';
@@ -12,6 +13,7 @@ import { Walkthrough } from '../shared/Walkthrough';
 export const AppLayout: React.FC = () => {
     return (
         <div className="layout">
+            <Sidebar />
             <main className="content" role="main">
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
@@ -23,7 +25,9 @@ export const AppLayout: React.FC = () => {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </main>
-            <BottomBar />
+            <div className="mobile-only">
+                <BottomBar />
+            </div>
             <Walkthrough />
         </div>
     );

@@ -5,7 +5,7 @@ import { Modal } from '../shared/Modal';
 import { Icon } from '../shared/Icon';
 import { Spinner } from '../shared/Spinner';
 import { useUser } from '../../context/UserContext';
-import type { WorkoutPlanDay } from '../../types';
+import type { WorkoutPlanDay, Exercise } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { colors, typography, spacing } from '../../styles/theme';
 
@@ -101,6 +101,8 @@ export const WorkoutDayModal: React.FC<WorkoutDayModalProps> = ({ isOpen, onClos
 
     if (!planDay.workout) return null;
 
+    const exercises = planDay.workout.exercises || [];
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Day ${planDay.day}: ${planDay.workout.name}`}>
             <div style={styles.container}>
@@ -110,15 +112,49 @@ export const WorkoutDayModal: React.FC<WorkoutDayModalProps> = ({ isOpen, onClos
                     </p>
                 </div>
                 
+                {/* Warmup Section */}
+                {planDay.workout.warmup && (
+                    <div>
+                        <p style={styles.sectionTitle}>🔥 Warmup</p>
+                        <div style={styles.warmupContainer}>
+                            <p style={styles.warmupText}>{planDay.workout.warmup}</p>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Description */}
                 <div>
-                    <p style={styles.sectionTitle}>Workout Details</p>
+                    <p style={styles.sectionTitle}>📋 Overview</p>
                     <div style={styles.descriptionContainer}>
                         <p style={styles.descriptionText}>{planDay.workout.description}</p>
                     </div>
                 </div>
                 
+                {/* Exercises Section */}
+                {exercises.length > 0 && (
+                    <div>
+                        <p style={styles.sectionTitle}>💪 Exercises ({exercises.length})</p>
+                        <div style={styles.exerciseList}>
+                            {exercises.map((exercise, index) => (
+                                <ExerciseCard key={index} exercise={exercise} index={index} isDark={isDark} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                {/* Cooldown Section */}
+                {planDay.workout.cooldown && (
+                    <div>
+                        <p style={styles.sectionTitle}>❄️ Cooldown</p>
+                        <div style={styles.warmupContainer}>
+                            <p style={styles.warmupText}>{planDay.workout.cooldown}</p>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Timer */}
                 <div>
-                    <p style={styles.sectionTitle}>Timer</p>
+                    <p style={styles.sectionTitle}>⏱️ Timer</p>
                     <WorkoutTimer durationInMinutes={planDay.workout.duration} onComplete={handleTimerComplete} />
                 </div>
                 
@@ -174,11 +210,189 @@ const getTimerStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
     resetButtonText: { color: isDark ? colors.light : colors.dark },
 });
 
+// Exercise Card Component
+interface ExerciseCardProps {
+    exercise: Exercise;
+    index: number;
+    isDark: boolean;
+}
+
+const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, index, isDark }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const styles = getExerciseStyles(isDark);
+    
+    return (
+        <div style={styles.exerciseCard}>
+            <button 
+                style={styles.exerciseHeader}
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                <div style={styles.exerciseHeaderLeft}>
+                    <span style={styles.exerciseNumber}>{index + 1}</span>
+                    <div style={styles.exerciseInfo}>
+                        <h4 style={styles.exerciseName}>{exercise.name}</h4>
+                        <p style={styles.exerciseMeta}>
+                            {exercise.sets} sets × {exercise.reps}
+                            {exercise.restSeconds && ` • ${exercise.restSeconds}s rest`}
+                        </p>
+                    </div>
+                </div>
+                <Icon 
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                    size={20} 
+                    color={isDark ? colors.gray[400] : colors.muted} 
+                />
+            </button>
+            
+            {isExpanded && (
+                <div style={styles.exerciseDetails}>
+                    {/* Target Muscles */}
+                    {exercise.targetMuscles && exercise.targetMuscles.length > 0 && (
+                        <div style={styles.muscleTagsContainer}>
+                            {exercise.targetMuscles.map((muscle, i) => (
+                                <span key={i} style={styles.muscleTag}>{muscle}</span>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {/* Instructions */}
+                    {exercise.instructions && exercise.instructions.length > 0 && (
+                        <div style={styles.instructionsContainer}>
+                            <p style={styles.instructionsTitle}>How to do it:</p>
+                            <ol style={styles.instructionsList}>
+                                {exercise.instructions.map((step, i) => (
+                                    <li key={i} style={styles.instructionStep}>{step}</li>
+                                ))}
+                            </ol>
+                        </div>
+                    )}
+                    
+                    {/* Tips */}
+                    {exercise.tips && (
+                        <div style={styles.tipsContainer}>
+                            <p style={styles.tipsText}>💡 {exercise.tips}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const getExerciseStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => ({
+    exerciseCard: {
+        backgroundColor: isDark ? colors.gray[700] : colors.slate[50],
+        borderRadius: 12,
+        overflow: 'hidden',
+        border: `1px solid ${isDark ? colors.gray[600] : colors.slate[200]}`,
+    },
+    exerciseHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: spacing.md,
+        width: '100%',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        textAlign: 'left',
+    },
+    exerciseHeaderLeft: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    exerciseNumber: {
+        width: 28,
+        height: 28,
+        borderRadius: '50%',
+        backgroundColor: colors.primary,
+        color: colors.light,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 14,
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
+    },
+    exerciseInfo: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+    },
+    exerciseName: {
+        margin: 0,
+        fontSize: 15,
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
+        color: isDark ? colors.light : colors.dark,
+    },
+    exerciseMeta: {
+        margin: 0,
+        fontSize: 13,
+        color: isDark ? colors.gray[400] : colors.muted,
+    },
+    exerciseDetails: {
+        padding: spacing.md,
+        paddingTop: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.sm,
+    },
+    muscleTagsContainer: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: spacing.xs,
+    },
+    muscleTag: {
+        backgroundColor: isDark ? colors.gray[600] : colors.slate[200],
+        color: isDark ? colors.gray[300] : colors.slate[700],
+        padding: '4px 10px',
+        borderRadius: 16,
+        fontSize: 12,
+        fontWeight: 500 as React.CSSProperties['fontWeight'],
+    },
+    instructionsContainer: {
+        backgroundColor: isDark ? colors.gray[800] : colors.slate[100],
+        borderRadius: 8,
+        padding: spacing.sm,
+    },
+    instructionsTitle: {
+        margin: 0,
+        marginBottom: spacing.xs,
+        fontSize: 13,
+        fontWeight: 600 as React.CSSProperties['fontWeight'],
+        color: isDark ? colors.gray[300] : colors.slate[600],
+    },
+    instructionsList: {
+        margin: 0,
+        paddingLeft: 20,
+    },
+    instructionStep: {
+        fontSize: 13,
+        color: isDark ? colors.gray[300] : colors.slate[700],
+        lineHeight: 1.6,
+        marginBottom: 4,
+    },
+    tipsContainer: {
+        backgroundColor: isDark ? colors.amber[800] + '30' : colors.amber[50],
+        borderRadius: 8,
+        padding: spacing.sm,
+        borderLeft: `3px solid ${colors.amber[500]}`,
+    },
+    tipsText: {
+        margin: 0,
+        fontSize: 13,
+        color: isDark ? colors.amber[300] : colors.amber[800],
+        lineHeight: 1.5,
+    },
+});
+
 const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties } => ({
     container: {
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.md,
+        maxHeight: '70vh',
+        overflowY: 'auto',
     },
     detailsBadge: {
         backgroundColor: isDark ? colors.gray[700] : colors.slate[50],
@@ -199,10 +413,24 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
         marginBottom: spacing.xs,
         margin: 0,
     },
+    warmupContainer: {
+        backgroundColor: isDark ? colors.emerald[800] + '30' : colors.emerald[50],
+        padding: spacing.md,
+        borderRadius: 8,
+        borderLeft: `3px solid ${colors.emerald[500]}`,
+        marginTop: spacing.xs,
+    },
+    warmupText: {
+        ...typography.body,
+        color: isDark ? colors.emerald[300] : colors.emerald[800],
+        lineHeight: 1.5,
+        margin: 0,
+    },
     descriptionContainer: {
         backgroundColor: isDark ? colors.gray[700] : colors.slate[100],
         padding: spacing.md,
         borderRadius: 8,
+        marginTop: spacing.xs,
     },
     descriptionText: {
         ...typography.body,
@@ -210,6 +438,12 @@ const getModalStyles = (isDark: boolean): { [key: string]: React.CSSProperties }
         lineHeight: 1.5,
         whiteSpace: 'pre-wrap',
         margin: 0,
+    },
+    exerciseList: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.sm,
+        marginTop: spacing.xs,
     },
     completeButton: {
         backgroundColor: colors.emerald[700],

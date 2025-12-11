@@ -157,39 +157,35 @@ Examples of good suggestions:
 
       case 'generateMonthlyWorkoutPlan': {
         const { user } = payload;
-        prompt = `Create a personalized 30-day workout plan for a user.
-
-User Profile:
+        prompt = `Create a 30-day workout plan for someone with these details:
 - Goal: ${user.goal}
 - Activity Level: ${user.activityLevel}
 - Age: ${user.age}
 - Gender: ${user.gender}
+- Weight: ${user.weight}kg, Height: ${user.height}cm
 
-Return ONLY valid JSON with this structure:
+Return ONLY valid JSON - an array of exactly 30 day objects wrapped in a "plan" key:
 {
     "plan": [
-        {
-            "day": 1,
-            "type": "workout",
-            "isCompleted": false,
-            "workout": {
-                "name": "Creative workout name",
-                "type": "Strength, Cardio, HIIT, Flexibility, or Active Recovery",
-                "duration": 30,
-                "description": "Detailed plan with exercises, sets, reps. Use newlines for clarity"
-            }
-        },
-        {
-            "day": 2,
-            "type": "rest",
-            "isCompleted": false
-        }
+        { "day": 1, "type": "workout", "isCompleted": false, "workout": { "name": "Upper Body Strength", "type": "strength", "duration": 45, "description": "Focus on chest, shoulders, and triceps", "exercises": [{ "name": "Push-ups", "sets": 3, "reps": "12-15" }, { "name": "Dumbbell Press", "sets": 3, "reps": "10-12" }] } },
+        { "day": 2, "type": "workout", "isCompleted": false, "workout": { "name": "Lower Body Power", "type": "strength", "duration": 40, "description": "Legs and glutes workout", "exercises": [{ "name": "Squats", "sets": 4, "reps": "12" }] } },
+        { "day": 3, "type": "rest", "isCompleted": false, "workout": null },
+        ... continue for all 30 days
     ]
 }
 
-Create exactly 30 days. For rest days, omit the workout object.
-Make it progressive and balanced. A moderately active user might have 5-on, 2-off split.`;
-        max_tokens = 4000;
+RULES:
+- Include exactly 30 days (day 1 to day 30)
+- Mix workout and rest days (typically 5-6 workouts per week, 1-2 rest days)
+- Each workout day must have type: "workout" and a workout object with exercises array
+- Each rest day must have type: "rest" and workout: null
+- workout.name should be descriptive (e.g., "Upper Body Strength", "HIIT Cardio")
+- workout.type should be: "strength", "cardio", "hiit", "flexibility", or "mixed"
+- workout.duration in minutes (30-60)
+- workout.exercises should have 4-8 exercises with name, sets, reps
+- Match intensity to activity level: ${user.activityLevel}
+- Align with goal: ${user.goal}`;
+        max_tokens = 8000;
         responseFormat = { type: "json_object" };
         break;
       }
@@ -206,44 +202,60 @@ CYCLE SYNC: The user is in their ${phase} menstrual phase. Tailor nutritional ch
 - Luteal: Complex carbs, magnesium-rich foods (nuts, seeds), B vitamins`;
         }
 
-        prompt = `Create a 7-day meal plan for a user.
-
-User Profile:
+        prompt = `Create a 7-day meal plan for:
 - Goal: ${user.goal}
-- Age: ${user.age}, Gender: ${user.gender}
-- Height: ${user.height}cm, Weight: ${user.weight}kg
-- Activity: ${user.activityLevel}
+- Daily targets: ${macros.target.calories} cal, ${macros.target.protein}g protein, ${macros.target.carbs}g carbs, ${macros.target.fat}g fat
+- Dietary preferences: ${user.dietaryPreferences?.length ? user.dietaryPreferences.join(', ') : 'None'}
 - Nationality: ${user.nationality || 'Not specified'}
-
-Daily Macro Targets:
-- Calories: ${macros.target.calories}
-- Protein: ${macros.target.protein}g
-- Carbs: ${macros.target.carbs}g
-- Fat: ${macros.target.fat}g
 ${phaseInstruction}
 
-Return ONLY valid JSON array with 7 days (Monday-Sunday). Each day:
+Return ONLY valid JSON with a "plan" key containing an array of 7 day objects:
 {
-    "dayOfWeek": "Monday",
-    "breakfast": {
-        "name": "Meal name",
-        "time": "8:00 AM",
-        "macros": {"calories": 400, "protein": 20, "carbs": 50, "fat": 10},
-        "ingredients": ["ingredient1", "ingredient2"],
-        "instructions": ["step1", "step2"],
-        "isLogged": false
-    },
-    "lunch": {...same structure...},
-    "dinner": {...same structure...},
-    "snack": {...same structure...},
-    "dailyTotals": {"calories": 2000, "protein": 150, "carbs": 200, "fat": 60}
+    "plan": [
+        {
+            "dayOfWeek": "Monday",
+            "breakfast": {
+                "name": "Protein Oatmeal Bowl",
+                "time": "7:00 AM",
+                "macros": { "calories": 400, "protein": 25, "carbs": 45, "fat": 12 },
+                "ingredients": ["1 cup oats", "1 scoop protein powder", "1 banana", "1 tbsp almond butter"],
+                "instructions": ["Cook oats with water", "Stir in protein powder", "Top with banana and almond butter"]
+            },
+            "lunch": {
+                "name": "Grilled Chicken Salad",
+                "time": "12:30 PM",
+                "macros": { "calories": 500, "protein": 40, "carbs": 30, "fat": 20 },
+                "ingredients": ["6oz chicken breast", "mixed greens", "cherry tomatoes", "olive oil dressing"],
+                "instructions": ["Grill chicken", "Combine vegetables", "Top with chicken and dressing"]
+            },
+            "dinner": {
+                "name": "Salmon with Vegetables",
+                "time": "7:00 PM",
+                "macros": { "calories": 550, "protein": 35, "carbs": 40, "fat": 25 },
+                "ingredients": ["6oz salmon", "broccoli", "sweet potato"],
+                "instructions": ["Bake salmon at 400F for 15 min", "Roast vegetables"]
+            },
+            "snack": {
+                "name": "Greek Yogurt with Berries",
+                "time": "3:30 PM",
+                "macros": { "calories": 200, "protein": 15, "carbs": 20, "fat": 8 },
+                "ingredients": ["1 cup Greek yogurt", "berries"],
+                "instructions": ["Mix yogurt with berries"]
+            },
+            "dailyTotals": { "calories": 1650, "protein": 115, "carbs": 135, "fat": 65 }
+        },
+        ... continue for Tuesday through Sunday
+    ]
 }
 
-Meals should be quick (under 30-40 minutes), varied, and aligned with goals.
-
-Return as JSON object with "plan" key containing the 7-day array:
-{ "plan": [ {...Monday...}, {...Tuesday...}, ... ] }`;
-        max_tokens = 6000;
+RULES:
+- Include all 7 days: Monday through Sunday
+- Each day MUST have: dayOfWeek, breakfast, lunch, dinner, snack, dailyTotals
+- Each meal MUST have: name, time, macros, ingredients array, instructions array
+- dailyTotals should approximately sum up all meals
+- Target ${macros.target.calories} calories per day
+- Make meals practical, varied, and aligned with goal: ${user.goal}`;
+        max_tokens = 8000;
         responseFormat = { type: "json_object" };
         break;
       }

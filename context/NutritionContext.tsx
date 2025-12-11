@@ -63,7 +63,7 @@ interface NutritionContextType {
     isMealPlanLoading: boolean;
     logMeal: (meal: Omit<Meal, 'id' | 'userId'>) => Promise<void>;
     removeMeal: (mealId: string) => void;
-    generateAndSetWeeklyMealPlan: () => Promise<void>;
+    generateAndSetWeeklyMealPlan: (forceRegenerate?: boolean) => Promise<void>;
     markMealAsLogged: (dayOfWeek: string, mealType: keyof Pick<MealPlanDay, 'breakfast' | 'lunch' | 'dinner' | 'snack'>) => Promise<void>;
 }
 
@@ -139,6 +139,7 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
         if (!user) return;
         
         const { macros: m, ...mealData } = meal;
+        const today = new Date().toISOString().split('T')[0];
         const mealToInsert = {
             ...mealData,
             calories: m.calories,
@@ -146,7 +147,7 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             carbs: m.carbs,
             fat: m.fat,
             userId: user.id,
-            date: new Date().toISOString().split('T')[0]
+            date: today
         };
 
         const { data, error } = await supabase.from('meals').insert(toDBShape(mealToInsert)).select().single();
@@ -163,7 +164,7 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             };
             setMeals(prev => {
                 const updatedMeals = [...prev, newMeal];
-                const key = getCacheKey('meals_today');
+                const key = getCacheKey(`meals_${today}`);
                 if(key) cachingService.set(key, updatedMeals);
                 return updatedMeals;
             });
@@ -177,17 +178,21 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
         if (!error) {
             setMeals(prev => {
                 const updatedMeals = prev.filter(m => m.id !== mealId);
-                const key = getCacheKey('meals_today');
+                const today = new Date().toISOString().split('T')[0];
+                const key = getCacheKey(`meals_${today}`);
                 if(key) cachingService.set(key, updatedMeals);
                 return updatedMeals;
             });
         }
     }, [getCacheKey]);
 
-    const generateAndSetWeeklyMealPlan = useCallback(async () => {
+    const generateAndSetWeeklyMealPlan = useCallback(async (forceRegenerate: boolean = false) => {
         if (!user || isMealPlanLoading) return;
         
-        // Logic to check if current plan is finished can be added here if needed (simplified for now)
+        // Skip generation if we have a valid plan and not forcing
+        if (!forceRegenerate && weeklyMealPlan && Array.isArray(weeklyMealPlan) && weeklyMealPlan.length === 7) {
+            return;
+        }
         
         setIsMealPlanLoading(true);
         try {
@@ -204,10 +209,11 @@ export const NutritionProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             if (key) await cachingService.set(key, plan);
         } catch (err) {
             console.error("Error generating meal plan:", err);
+            throw err; // Re-throw so UI can handle it
         } finally { 
             setIsMealPlanLoading(false); 
         }
-    }, [user, macros, isMealPlanLoading, getCacheKey]);
+    }, [user, macros, weeklyMealPlan, isMealPlanLoading, getCacheKey]);
 
     const markMealAsLogged = useCallback(async (dayOfWeek: string, mealType: keyof Pick<MealPlanDay, 'breakfast' | 'lunch' | 'dinner' | 'snack'>) => {
         if (!user || !weeklyMealPlan || !Array.isArray(weeklyMealPlan)) return;

@@ -29,6 +29,7 @@ const FoodScanner: React.FC<FoodScannerProps> = ({ isOpen, onClose }) => {
     const [error, setError] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -322,18 +323,19 @@ const FoodScanner: React.FC<FoodScannerProps> = ({ isOpen, onClose }) => {
                     ref={fileInputRef}
                     style={{ display: 'none' }}
                 />
+                <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileChange}
+                    ref={cameraInputRef}
+                    style={{ display: 'none' }}
+                />
                 <button style={getChoiceButtonStyles(isDark)} onClick={() => fileInputRef.current?.click()}>
                     <Icon name="upload" size={24} color={colors.primary} />
                     <span>Choose from Library</span>
                 </button>
-                <button style={getChoiceButtonStyles(isDark)} onClick={() => {
-                     const input = document.createElement('input');
-                     input.type = 'file';
-                     input.accept = 'image/*';
-                     input.capture = 'environment';
-                     input.onchange = (e) => handleFileChange(e as any);
-                     input.click();
-                }}>
+                <button style={getChoiceButtonStyles(isDark)} onClick={() => cameraInputRef.current?.click()}>
                     <Icon name="camera" size={24} color={colors.primary} />
                     <span>Take Photo</span>
                 </button>

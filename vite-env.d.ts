@@ -1,5 +1,26 @@
 /// <reference types="vite/client" />
 
+// Image module declarations
+declare module '*.png' {
+  const src: string;
+  export default src;
+}
+
+declare module '*.jpg' {
+  const src: string;
+  export default src;
+}
+
+declare module '*.jpeg' {
+  const src: string;
+  export default src;
+}
+
+declare module '*.svg' {
+  const src: string;
+  export default src;
+}
+
 interface ImportMetaEnv {
   // Groq API (AI text and vision)
   readonly VITE_GROQ_API_KEY?: string;

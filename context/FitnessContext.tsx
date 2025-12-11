@@ -11,7 +11,7 @@ interface FitnessContextType {
     workoutPlan: WorkoutPlan | null;
     isWorkoutPlanGenerating: boolean;
     logWorkout: (workout: Omit<Workout, 'id' | 'userId'>) => void;
-    generateAndSaveWorkoutPlan: () => Promise<void>;
+    generateAndSaveWorkoutPlan: (forceRegenerate?: boolean) => Promise<void>;
     markWorkoutAsComplete: (day: number) => Promise<void>;
 }
 
@@ -73,10 +73,11 @@ export const FitnessProvider: React.FC<React.PropsWithChildren<{}>> = ({ childre
         }
     }, [user, getCacheKey]);
 
-    const generateAndSaveWorkoutPlan = useCallback(async () => {
+    const generateAndSaveWorkoutPlan = useCallback(async (forceRegenerate: boolean = false) => {
         if (!user || isWorkoutPlanGenerating) return;
         
-        if (workoutPlan && Array.isArray(workoutPlan) && workoutPlan.length > 0) {
+        // Only skip if there's a valid plan AND it's not a forced regenerate
+        if (!forceRegenerate && workoutPlan && Array.isArray(workoutPlan) && workoutPlan.length > 0) {
             const completedCount = workoutPlan.filter(day => day.isCompleted).length;
             const workoutDays = workoutPlan.filter(day => day.type === 'workout').length;
             if (completedCount < workoutDays) return;
@@ -92,6 +93,7 @@ export const FitnessProvider: React.FC<React.PropsWithChildren<{}>> = ({ childre
             if (key) await cachingService.set(key, plan);
         } catch (err) {
             console.error("Error generating workout plan:", err);
+            throw err; // Re-throw so UI can handle it
         } finally { setIsWorkoutPlanGenerating(false); }
     }, [user, isWorkoutPlanGenerating, workoutPlan, getCacheKey]);
 

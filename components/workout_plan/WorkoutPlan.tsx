@@ -48,6 +48,16 @@ const WorkoutPlan: React.FC = () => {
         }
     };
 
+    const handleRegeneratePlan = async () => {
+        setError(null);
+        try {
+            await generateAndSaveWorkoutPlan(true); // Force regenerate
+        } catch (err) {
+            console.error("❌ Workout plan regeneration error:", err);
+            setError(getHumanReadableError(err));
+        }
+    };
+
     const handleDayClick = (day: WorkoutPlanDay) => {
         if (day.type === 'workout') {
             setSelectedDay(day);
@@ -85,6 +95,28 @@ const WorkoutPlan: React.FC = () => {
                     >
                         {isWorkoutPlanGenerating ? <Spinner size="sm" /> : <Icon name="lightbulb" size={20} color={colors.light} />}
                         <span style={styles.generateButtonText}>{isWorkoutPlanGenerating ? 'Building Your Plan...' : 'Generate My Plan'}</span>
+                    </button>
+                    {error && <p style={styles.errorText}>{error}</p>}
+                </div>
+            );
+        }
+
+        // Check if plan is malformed (less than 30 days or days missing workout names)
+        const isMalformed = workoutPlan.length < 30 || workoutPlan.some(day => day.type === 'workout' && !day.workout?.name);
+        
+        if (isMalformed) {
+            return (
+                <div style={styles.stateContainer}>
+                    <Icon name="refresh" size={48} color={colors.amber[500]} />
+                    <h3 style={styles.stateTitle}>Plan Needs Refresh</h3>
+                    <p style={styles.stateSubtitle}>Your workout plan appears to be incomplete. Let's generate a fresh 30-day plan!</p>
+                    <button
+                        onClick={handleRegeneratePlan}
+                        disabled={isWorkoutPlanGenerating}
+                        style={{...styles.generateButton, ...(isWorkoutPlanGenerating ? { opacity: 0.6 } : {})}}
+                    >
+                        {isWorkoutPlanGenerating ? <Spinner size="sm" /> : <Icon name="refresh" size={20} color={colors.light} />}
+                        <span style={styles.generateButtonText}>{isWorkoutPlanGenerating ? 'Regenerating Plan...' : 'Regenerate Plan'}</span>
                     </button>
                     {error && <p style={styles.errorText}>{error}</p>}
                 </div>

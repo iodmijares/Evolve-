@@ -41,8 +41,8 @@ interface UserContextType {
     logJournalEntry: (entry: Omit<JournalEntry, 'id' | 'userId' | 'date'>, date: string) => Promise<JournalEntry>;
     addChallenge: (challengeData: Omit<Challenge, 'id' | 'isCompleted' | 'progress' | 'userId' | 'createdAt'>) => Promise<void>;
     addAchievements: (newAchievements: Achievement[]) => void;
-    generateAndSaveWorkoutPlan: () => Promise<void>;
-    generateAndSetWeeklyMealPlan: () => Promise<void>;
+    generateAndSaveWorkoutPlan: (forceRegenerate?: boolean) => Promise<void>;
+    generateAndSetWeeklyMealPlan: (forceRegenerate?: boolean) => Promise<void>;
     markWorkoutAsComplete: (day: number) => Promise<void>;
     markMealAsLogged: (dayOfWeek: string, mealType: keyof Pick<MealPlanDay, 'breakfast' | 'lunch' | 'dinner' | 'snack'>) => Promise<void>;
     completeOnboarding: (profileData: Omit<UserProfile, 'id' | 'email'>) => Promise<void>;

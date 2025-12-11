@@ -396,7 +396,7 @@ html.dark .badge-primary {
 }
 
 /* Responsive visibility */
-.desktop-only { display: none; }
+.desktop-only { display: none !important; }
 .mobile-only { display: block; }
 
 /* Responsive Breakpoints */
@@ -436,6 +436,13 @@ html.dark .badge-primary {
 }
 
 @media (min-width: 1024px) {
+    .layout {
+        flex-direction: row;
+    }
+
+    .desktop-only { display: flex !important; }
+    .mobile-only { display: none !important; }
+
     .dashboard-grid {
         grid-template-columns: 1fr 1.2fr;
     }
