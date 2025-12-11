@@ -253,57 +253,106 @@ RULES:
 
         case 'generateWeeklyMealPlan': {
             const { user, macros, phase } = payload;
-            prompt = `Create a 7-day meal plan for:
+            
+            // Determine cuisine style based on nationality
+            const nationalityCuisineMap: { [key: string]: string } = {
+                'filipino': 'Filipino cuisine (adobo, sinigang, tinola, pinakbet, etc.)',
+                'philippines': 'Filipino cuisine (adobo, sinigang, tinola, pinakbet, etc.)',
+                'american': 'American cuisine with diverse options',
+                'usa': 'American cuisine with diverse options',
+                'mexican': 'Mexican cuisine (tacos, enchiladas, pozole, etc.)',
+                'italian': 'Italian cuisine (pasta, risotto, grilled meats, etc.)',
+                'japanese': 'Japanese cuisine (rice bowls, miso soup, grilled fish, etc.)',
+                'korean': 'Korean cuisine (bibimbap, bulgogi, kimchi, etc.)',
+                'chinese': 'Chinese cuisine (stir-fry, steamed dishes, rice, etc.)',
+                'indian': 'Indian cuisine (curry, dal, roti, biryani, etc.)',
+                'thai': 'Thai cuisine (curry, stir-fry, rice dishes, etc.)',
+                'vietnamese': 'Vietnamese cuisine (pho, banh mi, rice dishes, etc.)',
+                'indonesian': 'Indonesian cuisine (nasi goreng, satay, rendang, etc.)',
+                'malaysian': 'Malaysian cuisine (nasi lemak, laksa, satay, etc.)',
+                'spanish': 'Spanish cuisine (paella, tapas, grilled meats, etc.)',
+                'french': 'French cuisine (balanced meals with proteins and vegetables)',
+                'german': 'German cuisine (hearty meals with meats and vegetables)',
+                'british': 'British cuisine (roasts, stews, balanced meals)',
+                'australian': 'Australian cuisine (diverse, fresh ingredients)',
+                'canadian': 'Canadian cuisine (diverse North American options)',
+                'brazilian': 'Brazilian cuisine (rice, beans, grilled meats, etc.)',
+                'middle eastern': 'Middle Eastern cuisine (hummus, falafel, grilled meats, rice)',
+                'greek': 'Greek/Mediterranean cuisine (salads, grilled meats, olive oil)',
+            };
+            
+            const userNationality = user.nationality?.toLowerCase() || '';
+            const cuisineStyle = nationalityCuisineMap[userNationality] || 
+                (userNationality ? `${user.nationality} local cuisine and familiar foods` : 'internationally diverse but practical meals');
+            
+            prompt = `Create a 7-day meal plan personalized for this user:
+
+USER PROFILE:
+- Name: ${user.name}
 - Goal: ${user.goal}
-- Daily targets: ${macros.target.calories} cal, ${macros.target.protein}g protein, ${macros.target.carbs}g carbs, ${macros.target.fat}g fat
-- Dietary preferences: ${user.dietaryPreferences?.length ? user.dietaryPreferences.join(', ') : 'None'}
-${phase ? `- Menstrual phase: ${phase} (adjust foods accordingly)` : ''}
+- Gender: ${user.gender}
+- Age: ${user.age} years old
+- Weight: ${user.weight}kg, Height: ${user.height}cm
+- Activity Level: ${user.activityLevel}
+- Nationality/Location: ${user.nationality || 'Not specified'}
+- Dietary Preferences: ${user.dietaryPreferences?.length ? user.dietaryPreferences.join(', ') : 'None'}
+${phase ? `- Current Menstrual Phase: ${phase}` : ''}
+
+DAILY MACRO TARGETS:
+- Calories: ${macros.target.calories} cal
+- Protein: ${macros.target.protein}g
+- Carbs: ${macros.target.carbs}g
+- Fat: ${macros.target.fat}g
+
+CUISINE PREFERENCE: Focus on ${cuisineStyle}
 
 Return ONLY valid JSON - an array of exactly 7 day objects:
 [
     {
         "dayOfWeek": "Monday",
         "breakfast": {
-            "name": "Protein Oatmeal Bowl",
+            "name": "Meal name in local cuisine style",
             "time": "7:00 AM",
             "macros": { "calories": 400, "protein": 25, "carbs": 45, "fat": 12 },
-            "ingredients": ["1 cup oats", "1 scoop protein powder", "1 banana", "1 tbsp almond butter"],
-            "instructions": ["Cook oats with water", "Stir in protein powder", "Top with banana and almond butter"]
+            "ingredients": ["ingredient 1 with measurement", "ingredient 2 with measurement"],
+            "instructions": ["Step 1", "Step 2", "Step 3"]
         },
-        "lunch": {
-            "name": "Grilled Chicken Salad",
-            "time": "12:30 PM",
-            "macros": { "calories": 500, "protein": 40, "carbs": 30, "fat": 20 },
-            "ingredients": ["6oz chicken breast", "mixed greens", "cherry tomatoes", "cucumber", "olive oil dressing"],
-            "instructions": ["Grill chicken", "Combine vegetables", "Top with chicken and drizzle dressing"]
-        },
-        "dinner": {
-            "name": "Salmon with Vegetables",
-            "time": "7:00 PM",
-            "macros": { "calories": 550, "protein": 35, "carbs": 40, "fat": 25 },
-            "ingredients": ["6oz salmon fillet", "broccoli", "sweet potato", "olive oil"],
-            "instructions": ["Bake salmon at 400F for 15 min", "Roast vegetables", "Serve together"]
-        },
-        "snack": {
-            "name": "Greek Yogurt with Berries",
-            "time": "3:30 PM",
-            "macros": { "calories": 200, "protein": 15, "carbs": 20, "fat": 8 },
-            "ingredients": ["1 cup Greek yogurt", "1/2 cup mixed berries", "honey"],
-            "instructions": ["Mix yogurt with berries", "Drizzle honey on top"]
-        },
+        "lunch": { ... same structure ... },
+        "dinner": { ... same structure ... },
+        "snack": { ... same structure ... },
         "dailyTotals": { "calories": 1650, "protein": 115, "carbs": 135, "fat": 65 }
     },
     ... continue for Tuesday through Sunday
 ]
 
-RULES:
-- Include all 7 days: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-- Each day MUST have: dayOfWeek, breakfast, lunch, dinner, snack, dailyTotals
-- Each meal MUST have: name, time, macros (calories, protein, carbs, fat), ingredients array, instructions array
-- dailyTotals should sum up all meals for that day
-- Target approximately ${macros.target.calories} calories per day
-- Make meals practical, varied, and delicious
-- Align with goal: ${user.goal}`;
+CRITICAL RULES:
+1. Include all 7 days: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+2. Each day MUST have: dayOfWeek, breakfast, lunch, dinner, snack, dailyTotals
+3. Each meal MUST have: name, time, macros, ingredients (with measurements), instructions
+4. dailyTotals should sum up all meals for that day
+5. Target approximately ${macros.target.calories} calories per day
+
+IMPORTANT MEAL PLANNING RULES:
+- NEVER assume the user has leftover food from previous days
+- NEVER suggest "leftover [dish]" or "remaining [food]" as a meal
+- Each meal must be freshly prepared or simple enough to make from scratch
+- All ingredients should be commonly available in ${user.nationality || 'local'} grocery stores
+- Use ingredients that are fresh and practical to buy weekly
+- Consider meal prep friendly options that can be batch cooked, but list them as new meals each day
+- Include realistic portion sizes for one person
+- Suggest locally available alternatives if possible
+
+CULTURAL CONSIDERATIONS:
+- Use familiar ${user.nationality || 'local'} ingredients and cooking methods
+- Respect any dietary restrictions (${user.dietaryPreferences?.join(', ') || 'none specified'})
+- Include comfort foods modified to fit macro targets
+- Balance traditional flavors with nutritional goals
+
+GOAL-SPECIFIC ADJUSTMENTS:
+${user.goal === 'weight_loss' ? '- Focus on high-protein, high-fiber meals that keep you full\n- Include plenty of vegetables\n- Use lean proteins and healthy fats' : ''}
+${user.goal === 'muscle_gain' ? '- Emphasize protein-rich meals\n- Include complex carbs for energy\n- Add healthy calorie-dense foods' : ''}
+${user.goal === 'maintenance' ? '- Create balanced, sustainable meals\n- Mix of all macronutrients\n- Focus on whole foods' : ''}
+${phase ? `\nPHASE-SPECIFIC FOODS (${phase}):\n- Menstrual: Iron-rich foods, warm soups, comfort foods\n- Follicular: Light, fresh foods, leafy greens\n- Ovulatory: Raw vegetables, light proteins\n- Luteal: Complex carbs, magnesium-rich foods, healthy fats` : ''}`;
             max_tokens = 8000;
             break;
         }
